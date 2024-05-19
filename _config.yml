@@ -1,0 +1,30 @@
+title: Adam Laycock
+
+plugins:
+  - jekyll-postcss-v2
+
+exclude:
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+
+permalink: /:year/:month/:title
+
+defaults:
+  - scope:
+      path: "" # an empty string here means all files in the project
+    values:
+      layout: "default"
+  
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"

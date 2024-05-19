@@ -1,0 +1,33 @@
+---
+title: Adam Laycock
+---
+
+<div class="grid grid-cols-4 gap-4 mb-4">
+  {% for link in site.data.links %}
+    <a 
+      href="{{ link.target }}"
+      class="bg-white border border-gray-300 shadow-xl block hover:shadow-none text-center p-2"
+    >
+      <i class="{{ link.icon }} text-black text-[100px] align-middle pb-2"></i><br />
+      {{ link.label }}
+    </a>
+  {% endfor %}
+</div>
+
+<div class="grid grid-cols-2 gap-4 mb-2">
+  {% for post in site.posts limit:4 %}
+    {% include post.html post=post %}
+  {% endfor %}
+  <div class="bg-white border border-gray-300 shadow p-2 row-span-2 row-start-2 col-start-2">
+    <h2 class="font-light text-2xl border-b border-gray-200 mb-2">More Posts</h2>
+    <a href="/blog/">All Posts</a><br /><br />
+    {% capture tagString %}{% for tag in site.tags %}{{ tag[0] }}{% unless forloop.last %}|{% endunless %}{% endfor %}{% endcapture %}
+    {% assign tags = tagString | split: '|' | sort %}
+
+    <div class="flex flex-wrap gap-2">
+        {% for tag in tags %}
+            <a href="/tag/{{ tag }}">#{{ tag }}</a>
+        {% endfor %}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,7 @@
+ - label: "@arcath"
+   target: https://github.com/Arcath
+   icon: fa-brands fa-github
+
+ - label: "@AdamMLaycock"
+   target: https://twitter.com/AdamMLaycock
+   icon: fa-brands fa-x-twitter

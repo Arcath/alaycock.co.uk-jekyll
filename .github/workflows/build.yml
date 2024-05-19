@@ -9,10 +9,10 @@ on:
 
 jobs:
   build:
-    name: 📚 Docs
+    name: 📚 Build
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-docs
+      group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
     steps:
       - name: ⬇️ Checkout repo

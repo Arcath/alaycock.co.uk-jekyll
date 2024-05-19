@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Issue 37</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Issue 37</h1>
+  <ul class="flex gap-2">
+    <li>28 August 2013</li>
+    
+      <li><a href="/tag/adauth">#adauth</a></li>
+    
+      <li><a href="/tag/ruby">#ruby</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p><a href="https://github.com/Arcath/Adauth/issues/37">Adauth/Issue#37</a> was raised by <a href="https://github.com/weightyfoe">weightyfoe</a> and has proven to be a rather weird one.</p>
+
+<p>Basically Adauth would successfuly authenticate a user when no password was supplied which to me sounds like AD allowing some kind anonymous login to query data that everyone has access to. The problem is that Adauth uses did it bind correctly? as the true/false value for the user details being correct.</p>
+
+<h2 id="what-kind-of-access-do-we-get-using-passwordless">What kind of access do we get using passwordless?</h2>
+
+<p>One thing that came to mind straight away was what level of access do we get using the passwordless login? So I fired up irb and ran this:</p>
+
+<div class="language-rb highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;</span> <span class="no">Adauth</span><span class="p">.</span><span class="nf">configure</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+<span class="o">*&gt;</span> <span class="n">c</span><span class="p">.</span><span class="nf">domain</span> <span class="o">=</span> <span class="s2">"domain.local"</span>
+<span class="o">*&gt;</span> <span class="n">c</span><span class="p">.</span><span class="nf">query_user</span> <span class="o">=</span> <span class="s2">"Administrator"</span>
+<span class="o">*&gt;</span> <span class="n">c</span><span class="p">.</span><span class="nf">query_password</span> <span class="o">=</span> <span class="s2">""</span>
+<span class="o">*&gt;</span> <span class="k">end</span>
+<span class="o">&gt;&gt;</span> <span class="no">Adauth</span><span class="o">::</span><span class="no">AdObjects</span><span class="o">::</span><span class="no">User</span><span class="p">.</span><span class="nf">all</span>
+<span class="p">[</span><span class="c1">#&lt;Adauth::AdObjects::User:0...&gt;]</span>
+</code></pre></div></div>
+
+<p>Weirdly doing this test 5 minutes later resulted in an error</p>
+
+<div class="language-rb highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;</span> <span class="no">Adauth</span><span class="o">::</span><span class="no">AdObjects</span><span class="o">::</span><span class="no">User</span><span class="p">.</span><span class="nf">all</span>
+<span class="no">RuntimeError</span><span class="p">:</span> <span class="no">Search</span> <span class="n">returned</span> <span class="no">NIL</span>
+</code></pre></div></div>
+
+<p>The intermitance of this issue is going to make fixing it a challenge but lets press on.</p>
+
+<h2 id="block-blank-passwords">Block blank passwords!</h2>
+
+<p>An obvious solution to to make Adauth simply block passwords of 0 length but what if you have users with no passwords? and thats not fixing the underlying issue just masking it.</p>
+
+<h2 id="could-it-be-ad">Could it be AD?</h2>
+
+<p>One thought is that its AD saying no password? no problem! and letting you in… which is midly scary as I’m working on a brand new domain here so it would have to be security hole thats open by default.</p>
+
+<h2 id="adauth-or-netldap">Adauth or Net/Ldap?</h2>
+
+<p>I started looking at Net/Ldap as a potential cause (Adauth doesn’t talk to AD directly so its not likely to be the cause) and BINGO <a href="https://github.com/ruby-ldap/ruby-net-ldap/issues/43">issue #43</a> which is a repost of <a href="https://github.com/ruby-ldap/ruby-net-ldap/issues/5">issue #5</a> which shows that yes it is ADs fault! Its letting anonymous binding happen so that we can query the <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/ms684291(v=vs.85).aspx">rootDSE</a>. I can’t really see why you would want that but its part of the spec so what can we do?</p>
+
+<h2 id="the-fix">The fix</h2>
+
+<p>Although it is AD causing the issue its doing it to meet the LDAP specification so it makes it the responsibility of the LDAP client to support the spec and take it into account when writing code to that end the solution is to add a config variable to control anonymous bindings.</p>
+
+<div class="language-rb highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">raise</span> <span class="s2">"Anonymous Bind is disabled"</span> <span class="k">if</span> <span class="vi">@config</span><span class="p">[</span><span class="ss">:password</span><span class="p">]</span> <span class="o">==</span> <span class="s2">""</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="p">(</span><span class="vi">@config</span><span class="p">[</span><span class="ss">:anonymous_bind</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>This happens in <code class="language-plaintext highlighter-rouge">Adauth::Connection.bind</code> to halt the authentication process in the same way that Timeouts and Bad Passwords do.</p>
+
+<p>As normal there is now a test to make sure that this never happens again</p>
+
+<div class="language-rb highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">default_config</span>
+<span class="n">ldap_user</span> <span class="o">=</span> <span class="no">Adauth</span><span class="p">.</span><span class="nf">authenticate</span><span class="p">(</span><span class="s2">"administrator"</span><span class="p">,</span> <span class="s2">"foo"</span><span class="p">)</span>
+<span class="n">ldap_user</span><span class="p">.</span><span class="nf">should</span> <span class="n">be_false</span>
+<span class="n">ldap_user</span> <span class="o">=</span> <span class="no">Adauth</span><span class="p">.</span><span class="nf">authenticate</span><span class="p">(</span><span class="n">test_data</span><span class="p">(</span><span class="s2">"domain"</span><span class="p">,</span> <span class="s2">"breakable_user"</span><span class="p">),</span> <span class="s2">""</span><span class="p">)</span>
+<span class="n">ldap_user</span><span class="p">.</span><span class="nf">should</span> <span class="n">be_false</span>
+<span class="n">ldap_user</span> <span class="o">=</span> <span class="no">Adauth</span><span class="p">.</span><span class="nf">authenticate</span><span class="p">(</span><span class="n">test_data</span><span class="p">(</span><span class="s2">"domain"</span><span class="p">,</span> <span class="s2">"query_user"</span><span class="p">),</span> <span class="n">test_data</span><span class="p">(</span><span class="s2">"domain"</span><span class="p">,</span> <span class="s2">"query_password"</span><span class="p">))</span>
+<span class="n">ldap_user</span><span class="p">.</span><span class="nf">should</span> <span class="n">be_a</span> <span class="no">Adauth</span><span class="o">::</span><span class="no">AdObjects</span><span class="o">::</span><span class="no">User</span>
+</code></pre></div></div>
+
+<p>Which basically makes sure that logging in with a bad password causes an error, then makes sure that no password errors and just confirms that normal authentication works.</p>
+
+<p>Anonymous bind is going to be disabled by default but can be turned back on using <code class="language-plaintext highlighter-rouge">c.anonymous_bind = true</code> during your <code class="language-plaintext highlighter-rouge">Adauth.configure</code> block.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Screeps Part 13 – Building Up</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Screeps Part 13 – Building Up</h1>
+  <ul class="flex gap-2">
+    <li>02 July 2017</li>
+    
+      <li><a href="/tag/screeps">#screeps</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>This is part 13 of my Screeps story, you can read the whole story <a href="/tag/screeps">here</a>.</p>
+
+<h2 id="building-up">Building Up</h2>
+
+<p>The new AI from <a href="/2017/06/screeps-part-12-start-again/">part 12</a> was not as complete when it was called into service. It wasn’t important at the time, my rooms were all dead and I only needed it to gather energy and build new creeps.</p>
+
+<p>It took a bit of work getting the room claiming system to work. <code class="language-plaintext highlighter-rouge">Game.rooms</code> only contains rooms you control or have creeps in so I can’t just get the controller of the room the flag is in. I need to move to the target room and then aim for the controller. To get this working I get my creeps to move to the flags <code class="language-plaintext highlighter-rouge">RoomPosition</code> and then claim the rooms controller once they are <code class="language-plaintext highlighter-rouge">nearTo</code> the <code class="language-plaintext highlighter-rouge">RoomPosition</code>.</p>
+
+<p>The new AI makes adding new jobs a lot easier. Adding extractors back in took a small amount of work (see <a href="https://github.com/Arcath/screeps-code/commit/2970300a5dbc96d20568a251465ce9637f03b4e3">commit</a>).</p>
+
+<p>I had quite a few issues with me not having healer creeps. Once you hit RC3 in a room you can drop a tower which can heal everything very quickly, my AI relies on towers to heal. Of the 2 rooms, I claimed 1 has gone really well, getting to RC3 before anything died and building up very nicely. The other has been a constant pain. The sources are so far apart that it takes a lot longer to get energy where it’s needed. When it did reach RC3 both of my <em>source containers</em> died before the tower got built which threw a huge spanner in the works and added a few hours to wait for that room to be self-sufficient.</p>
+
+<h2 id="more-flags">More Flags</h2>
+
+<p>My new AI is directed by flags. If I want it to break from its norm and do another job I drop a flag of a certain colour and the AI handles it.</p>
+
+<p>To get back to full functionality I need to add some flags for harvesting other rooms. Again with the jobs system, this was pretty easy. The existence of the flag adds a job to the queue that essentially a harvest job with another rooms storage as its destination.
+Grafana</p>
+
+<p>I’ve seen a few screenshots on the Screeps Slack group of Grafana dashboards for a players Empire which I looked at enviously.</p>
+
+<p>I have an <a href="http://amzn.to/2tnLEjB">HP microserver</a> at home which handles the docker setup from <a href="https://github.com/screepers/screeps-grafana">screeps-grafana</a> pretty well. In a nutshell, 1 program uses the screeps API to move Memory.stats in statsd which uses Graphite to store data. Grafana then reads data from Graphite and produces graphs and another analysis tools.</p>
+
+<p>It has quickly become a huge part of how I play Screeps. I have the grafana dashboard open most of the time so I can see how everything is going without opening the whole game.</p>
+
+<p>The graphing and estimation lets me see how improvements to my code are doing. For example, I added links to improve the energy transfer speed in my rooms and saw my time to upgrade nearly half.</p>
+
+<h2 id="improving-my-cpu-usage">Improving my CPU Usage</h2>
+
+<p>My CPU usage is pretty high. Knowing that some players I’ve spoken to on Slack run empires bigger than mine on the free 10 CPU you get from buying on Steam my CPU usage is rather high.</p>
+
+<p>The first gain I made was to abuse how Screeps runs players code. Your code runs on one of four nodes. These nodes preserve the global object between runs which means anything you put in there can be used again next tick without deserializing it or processing it. Your code moves from node to node between ticks so you can’t just start using global.memory instead and leave it at that but with a little check to see if this is the same node as the previous tick you can make some savings.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span><span class="p">(</span><span class="nb">global</span><span class="p">.</span><span class="nx">lastTick</span> <span class="o">&amp;&amp;</span> <span class="nb">global</span><span class="p">.</span><span class="nx">LastMemory</span> <span class="o">&amp;&amp;</span> <span class="nx">Game</span><span class="p">.</span><span class="nx">time</span> <span class="o">===</span> <span class="p">(</span><span class="nb">global</span><span class="p">.</span><span class="nx">lastTick</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)){</span>
+  <span class="k">delete</span> <span class="nb">global</span><span class="p">.</span><span class="nx">Memory</span>
+  <span class="nb">global</span><span class="p">.</span><span class="nx">Memory</span> <span class="o">=</span> <span class="nb">global</span><span class="p">.</span><span class="nx">LastMemory</span>
+  <span class="nx">RawMemory</span><span class="p">.</span><span class="nx">_parsed</span> <span class="o">=</span> <span class="nb">global</span><span class="p">.</span><span class="nx">LastMemory</span>
+<span class="p">}</span><span class="k">else</span><span class="p">{</span>
+  <span class="nx">Memory</span><span class="p">;</span>
+  <span class="nb">global</span><span class="p">.</span><span class="nx">LastMemory</span> <span class="o">=</span> <span class="nx">RawMemory</span><span class="p">.</span><span class="nx">_parsed</span>
+<span class="p">}</span>
+<span class="nb">global</span><span class="p">.</span><span class="nx">lastTick</span> <span class="o">=</span> <span class="nx">Game</span><span class="p">.</span><span class="nx">time</span>
+</code></pre></div></div>
+
+<p>This is the code I added at the top of my loop to make use of this.</p>
+
+<p>I added some profiling to my code to monitor how much each process is using. From here I can see where my code needs improving and watch my improvements go to work.</p>
+
+<p><img src="/assets/2017/07/screeps-part-13-building-up/cpu-profiling.png" alt="CPU Profiling" /></p>
+
+<p>Straight away I can see that my highest CPU user is the jobs controller (light blue). So much so that the overall CPU usage (orange) almost matches it higher up.</p>
+
+<p>A quick read through of my code showed me that for every building that might receive energy I was creating a job, hashing it, and then looking for that hash in the database. Hashing the job is not a quick process hence the high usage. So seeing as memory is bit faster now I decided to put premade jobs with hashes into an object keyed on the building id. Now when creating an energy job I first check if the premade job exists.</p>
+
+<p>This cache brought the job controller usage down to the level of the other processes, but the increase in memory size has increased the time spent on prepare (yellow).</p>
+
+<p>Looking a the graph now I need a more general increase in performance, but overall I don’t go over my limit much anymore.</p>
+
+<p><img src="/assets/2017/07/screeps-part-13-building-up/improved.png" alt="Improvements" /></p>
+
+<p>There is more to do getting my CPU down but for now, it’s low enough that I should be able to take a 6th room next week when my GCL goes up.</p>
+
+<h2 id="thanks-for-the-help">Thanks for the Help!</h2>
+
+<p>A lot of the work for Grafana and my memory improvements came from users on the <a href="https://screeps.slack.com/">Slack group</a>. I forgot to add your names to my notes so I’m sorry I can’t shout you out indavidually.</p>
+
+<h2 id="get-screeps">Get Screeps</h2>
+
+<p>You can follow my progress on <a href="https://screeps.com/a/#!/profile/Arcath">my profile</a>. Once I reach RC4 I’m not sure how I am going to progress yet.</p>
+
+<p>You can read more about Screeps on their <a href="https://screeps.com/">site</a>. I purchased it through steam giving me the permanent 10 CPU and the desktop client.</p>
+
+<p>You can see my code as it was at the end of this post <a href="https://github.com/Arcath/screeps-code/tree/c24b0a0d42b733f4e66a6e4678b51aa0a2b85e1d">here</a>.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

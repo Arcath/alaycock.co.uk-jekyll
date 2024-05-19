@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Screeps Part 10 – RC6 Twice and a Third Room</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Screeps Part 10 – RC6 Twice and a Third Room</h1>
+  <ul class="flex gap-2">
+    <li>11 January 2017</li>
+    
+      <li><a href="/tag/screeps">#screeps</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>This is part 10 of my Screeps story, you can read the whole story <a href="/tag/screeps">here</a>.</p>
+
+<h2 id="rc6-twice">RC6 Twice</h2>
+
+<p>After the respawn in the <a href="/2017/01/gcl3-another-respawn/">last post</a>, my rooms have been plodding along nicely. I now have 2 rooms at RC6. This means 2 rooms extracting and selling minerals.</p>
+
+<p>My AI doesn’t make full use of labs yet so instead of leaving minerals alone I extract and sell as much as I can. This is leading to a pretty healthy credits balance which I will be putting to use in the future.</p>
+
+<p>Having 2 high-level rooms is great. My economy is performing pretty well and when I add a third room to the mix it should be lifted to a self-sustaining level quickly.</p>
+
+<h2 id="mining-another-room">Mining another room</h2>
+
+<p>Way back in <a href="/2016/11/screeps-part-2-rc3/">part 2</a> I made some creeps to mine from other rooms I didn’t own. It wasn’t hard with my new AI to re-implement them.</p>
+
+<p>The workflow is something like this:</p>
+
+<ul>
+  <li>Am I full?
+    <ul>
+      <li>Yes:
+        <ul>
+          <li>Am I in the drop off room?
+            <ul>
+              <li>Yes: Run normal hauler code</li>
+              <li>No: Move to drop off room</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>No:
+        <ul>
+          <li>Am I in the harvest room?
+            <ul>
+              <li>Yes: Run normal harvester code</li>
+              <li>No: Move to harvest room</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p>My AI has all the code I need to do this already.</p>
+
+<p>My creep director checks for a few things in a creeps memory before it runs the normal functions. In this case, the <code class="language-plaintext highlighter-rouge">goToRoom</code> memory entry is used to specify a room to go to. If this key exists the director runs a separate function instead of the usual function for that creeps action. Once it is in the room it needs to be in <em>normal</em> operations resume and the creep performs its intended job.</p>
+
+<h2 id="attack">Attack!</h2>
+
+<p>It’s time to give my AI some teeth.</p>
+
+<p>It’s time to stop being passive and instead take what I need.</p>
+
+<p><a href="https://screeps.com/a/#!/room/E63S74">E63S74</a></p>
+
+<p>A 2 source room held by a player who’s AI seems very basic.</p>
+
+<p>The only barrier for me is their tower. It can destroy one of my creeps before I can reach it. So I need to feed infantry into it until it runs out of energy.</p>
+
+<p>Half of the battle in screeps is observing the way the other players AI is working. My opponents AI has some exploitable flaws.</p>
+
+<ul>
+  <li>It tries to pick up any dropped energy.
+    <ul>
+      <li>When my creeps die to the tower they send creeps to pick up the energy.</li>
+      <li>This puts his creeps in striking distance of mine.</li>
+      <li>Killing all his creeps means no resupply of that tower.</li>
+      <li>All his creeps come to the energy. This is the problem I solved in part 7.</li>
+    </ul>
+  </li>
+  <li>If their creeps stray too close to the room exit they pass into mine and make no attempt to flee.
+    <ul>
+      <li>My 2 towers destroy them very quickly.</li>
+    </ul>
+  </li>
+  <li>They are at RC5 but only have 5 extensions.
+    <ul>
+      <li>Their creeps are underpowered, it’s like attacking someone at RC2.</li>
+    </ul>
+  </li>
+</ul>
+
+<p>After sending 2 creeps to their death I had caused a pretty big disruption to their room. They are down to 2 surviving creeps which is affecting their supply situation. No deliveries to spawn or the tower will be a great help to my war effort.</p>
+
+<p><img src="/assets/2017/01/screeps-part-10-rcl6-twice-third-room/attack.png" alt="Attack" /></p>
+
+<h2 id="get-screeps">Get Screeps</h2>
+
+<p>You can follow my progress on <a href="https://screeps.com/a/#!/profile/Arcath">my profile</a>. Once I reach RC4 I’m not sure how I am going to progress yet.</p>
+
+<p>You can read more about Screeps on their <a href="https://screeps.com/">site</a>. I purchased it through steam giving me the permanent 10 CPU and the desktop client.</p>
+
+<p>You can see my code as it was at the end of this post <a href="https://github.com/Arcath/screeps-code/tree/569b694ebaf313439c244ffa6bf09e6a3217e081">here</a>.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

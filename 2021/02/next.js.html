@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Next.JS</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Next.JS</h1>
+  <ul class="flex gap-2">
+    <li>18 February 2021</li>
+    
+      <li><a href="/tag/next-js">#next-js</a></li>
+    
+      <li><a href="/tag/tailwindcss">#tailwindcss</a></li>
+    
+      <li><a href="/tag/typescript">#typescript</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>I’ve seen some anti-Gatsby sentiment bubbling around recently. I normally ignore articles like this when they come along. It seems like every few weeks there is an article telling me I should abandon <a href="https://reactjs.org/">React</a> for <a href="https://vuejs.org/">Vue</a>, then that Vue is dead long live <a href="https://svelte.dev/">Svelte</a>, and a few weeks later another article saying React was fine.</p>
+
+<p>A lot of the things I was reading made a lot of sense, and I agreed with the points. <a href="https://www.gatsbyjs.com/">Gatsby</a> had annoyed me with the way it splits your site in two with the GraphQL API in the middle. I like GraphQL, I’ve written two full-blown APIs using it, but I find Gatsby’s GraphQL API hard to extend and can sometimes trap you into having to pull in lots of data for a simple query.</p>
+
+<h2 id="nextjs">Next.JS</h2>
+
+<p>So why Next.JS? <a href="https://nextjs.org/">Next.JS</a> separates rendering and generation within the same files, unlike Gatsby where you have to write an isolated <code class="language-plaintext highlighter-rouge">gatsby-node.js</code> and use plugins to parse/fetch data and then output a page list.</p>
+
+<p>I didn’t start this rewrite expecting to go all the way to launch it. Whenever I want to try new technologies, I rebuild this site, it is relatively complex and has quite a few features which makes it a great <em>test case</em>.</p>
+
+<p>This rewrite has shown how much work had gone into the old Gatsby site and how powerful that platform was, Saying that, I do find that this Next.js site just makes more sense.</p>
+
+<p>I went big into the Typescript in this site. One of my gripes with Gatsby, and GraphQL, in general, is that I have to manually type the result of queries which, of-course leads to bugs.</p>
+
+<p>So what have I done here?</p>
+
+<p>Looking at posts, I have a <code class="language-plaintext highlighter-rouge">BasePost</code> interface that describes the basic data I have on the post before I parse it. <code class="language-plaintext highlighter-rouge">Post</code> extends <code class="language-plaintext highlighter-rouge">BasePost</code> with the data from the front matter and content of the post which requires actually reading the file. The functions that fetch the data then return this <code class="language-plaintext highlighter-rouge">Post</code> type. My data fetching functions take a <code class="language-plaintext highlighter-rouge">fields</code> argument so that I can limit the data being returned. Next.js creates a data file for each page, no need to have the whole page’s content unless I need it. Fetching limited data then becomes as easy as calling one of the fetch functions.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Home Page</span>
+<span class="kd">const</span> <span class="nx">posts</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">getPosts</span><span class="p">([</span><span class="dl">'</span><span class="s1">slug</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">title</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">href</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">year</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">month</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">day</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">lead</span><span class="dl">'</span><span class="p">])</span>
+
+<span class="c1">// Post page</span>
+<span class="kd">const</span> <span class="nx">post</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">getPostBySlug</span><span class="p">(</span>
+  <span class="p">[</span>
+    <span class="nx">params</span><span class="p">.</span><span class="nx">year</span> <span class="k">as</span> <span class="kr">string</span><span class="p">,</span>
+    <span class="nx">params</span><span class="p">.</span><span class="nx">month</span> <span class="k">as</span> <span class="kr">string</span><span class="p">,</span>
+    <span class="nx">params</span><span class="p">.</span><span class="nx">slug</span> <span class="k">as</span> <span class="kr">string</span>
+  <span class="p">],</span> 
+  <span class="p">[</span><span class="dl">'</span><span class="s1">slug</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">title</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">content</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">lead</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">href</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">tags</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">year</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">month</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">day</span><span class="dl">'</span><span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<p>Using <code class="language-plaintext highlighter-rouge">Pick&lt;T&gt;</code> allows me to make sure that the type exactly matches the data I am requesting. No more making sure I keep a query and type in sync.</p>
+
+<p>Because these data fetching functions are just typescript I can use them outside Next.js as well, in my <a href="/2019/01/generated-social-images">social image generator</a> for example. That post is outdated now and I may re-visit it as my new method is a lot cleaner.</p>
+
+<h2 id="tailwind">Tailwind</h2>
+
+<p>The other new resource I wanted to try out this time was <a href="https://tailwindcss.com/">Tailwind CSS</a>. I had used it on a React App within the company before and wanted to give it a go on something more creative.</p>
+
+<p>I like Tailwind, I find it extremely powerful without getting in the way of what I want to do like other CSS frameworks. Tailwind requires you to know CSS, which I think is what I like about it. I found with Bootstrap and others that my own stylesheet was just me throwing <code class="language-plaintext highlighter-rouge">!important</code> at everything to make a buttons shadow slightly less obvious.</p>
+
+<p>Tailwind is more than just a framework, the stylesheet in use on this site is <em>generated</em> by Tailwind. My colours, sizes, and any other units I have named are merged into the stylesheet. For example I added a width of <code class="language-plaintext highlighter-rouge">dbl</code>, with a value of <code class="language-plaintext highlighter-rouge">200vw</code>, which can be used with any width class in Tailwind like <code class="language-plaintext highlighter-rouge">w-dbl</code>, <code class="language-plaintext highlighter-rouge">max-w-dbl</code> and many more.</p>
+
+<p>I also use <a href="https://purgecss.com/">purgecss</a> to remove all the unused classes and keep tailwind as light as possible for this site.</p>
+
+<h2 id="source">Source</h2>
+
+<p>As with my Gatsby site I’ve made the <a href="https://github.com/Arcath/arcath.net-next">source code of this site available on GitHub</a>. You’ll see my process of developing the site as I kept it private until launch.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

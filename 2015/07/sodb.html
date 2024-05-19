@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>SODB</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">SODB</h1>
+  <ul class="flex gap-2">
+    <li>14 July 2015</li>
+    
+      <li><a href="/tag/sodb">#sodb</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p><a href="https://www.npmjs.com/packages/sodb">sodb</a> is the latest of my little projects to hit <a href="https://www.npmjs.com/">npm</a> and I really enjoyed making this one.</p>
+
+<p>It is written in <a href="http://coffeescript.org/">coffee-script</a> and <a href="https://coveralls.io/r/Arcath/sodb">fully tested</a>.</p>
+
+<p>The idea is to have the features of a database table available to an array of objects. You have to admit that <code class="language-plaintext highlighter-rouge">{name: 'bob', age: 10, height: 120}</code> already looks a lot like a database record so that is all sodb needs to add a record!</p>
+
+<p>Creating a database is as easy as creating a new object:</p>
+
+<div class="language-coffee highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">sodb</span> <span class="o">=</span> <span class="nx">require</span> <span class="s">'sodb'</span>
+
+<span class="nx">db</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">sodb</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>Which can now have objects added to it</p>
+
+<div class="language-coffee highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">db</span><span class="p">.</span><span class="na">add</span> <span class="p">{</span><span class="na">name</span><span class="o">:</span> <span class="s">'bob'</span><span class="p">,</span> <span class="na">age</span><span class="o">:</span> <span class="mi">10</span><span class="p">,</span> <span class="na">height</span><span class="o">:</span> <span class="mi">120</span><span class="p">}</span>
+</code></pre></div></div>
+
+<p>The database now has 1 entry in it which can be searched for (not that you need to) and updated or removed when ever you want.</p>
+
+<p>Finding records is done through the <code class="language-plaintext highlighter-rouge">where</code> method which takes varying arguments like so:</p>
+
+<div class="language-coffee highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">db</span><span class="p">.</span><span class="na">where</span> <span class="p">{</span><span class="na">name</span><span class="o">:</span> <span class="s">'bob'</span><span class="p">}</span>
+<span class="nx">db</span><span class="p">.</span><span class="na">where</span> <span class="p">{</span><span class="nx">name</span> <span class="p">{</span><span class="o">is:</span> <span class="s">'bob'</span><span class="p">}}</span> <span class="c1"># this is the same as the line above, sodb assumes you mean is</span>
+<span class="nx">db</span><span class="p">.</span><span class="na">where</span> <span class="p">{</span><span class="na">age</span><span class="o">:</span> <span class="p">{</span><span class="na">gt</span><span class="o">:</span> <span class="mi">8</span><span class="p">}}</span>
+<span class="nx">db</span><span class="p">.</span><span class="na">where</span> <span class="p">{</span><span class="na">age</span><span class="o">:</span> <span class="p">{</span><span class="na">lt</span><span class="o">:</span> <span class="mi">12</span><span class="p">}}</span>
+<span class="nx">db</span><span class="p">.</span><span class="na">where</span> <span class="p">{</span><span class="na">name</span><span class="o">:</span> <span class="p">{</span><span class="na">isnot</span><span class="o">:</span> <span class="s">'steve'</span><span class="p">}}</span>
+</code></pre></div></div>
+
+<p>You can have multiple <em>searches</em> which are run one after another on an ever decreasing set of the results.</p>
+
+<div class="language-coffee highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">db</span><span class="p">.</span><span class="na">where</span> <span class="p">{</span><span class="na">name</span><span class="o">:</span> <span class="s">'bob'</span><span class="p">},</span> <span class="p">{</span><span class="na">age</span><span class="o">:</span> <span class="p">{</span><span class="na">gt</span><span class="o">:</span> <span class="mi">8</span><span class="p">}}</span>
+</code></pre></div></div>
+
+<p>If you need to find records where X is a <em>or</em> b you can use:</p>
+
+<div class="language-coffee highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">db</span><span class="p">.</span><span class="na">where</span> <span class="p">{</span><span class="na">name</span><span class="o">:</span> <span class="p">[</span><span class="s">'bob'</span><span class="p">,</span> <span class="s">'kevin'</span><span class="p">]}</span>
+</code></pre></div></div>
+
+<p>sodb also features a cache to help speed up the finding of data in large databases, or to be more specific finding the same data again in a large database.</p>
+
+<p>Caching uses a hash of of the search object(s) to store the returned results and then returns them to you if they exist.</p>
+
+<p>sodb was written for an as yet unreleased version of <a href="https://www.npmjs.com/packages/express-permissions">express-permissions</a> which needed the permissions to be stored where I could run a query like:</p>
+
+<div class="language-coffee highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">db</span><span class="p">.</span><span class="na">where</span> <span class="p">{</span><span class="na">route</span><span class="o">:</span> <span class="s">'/foo/bar'</span><span class="p">},</span> <span class="p">{</span><span class="na">method</span><span class="o">:</span> <span class="p">[</span><span class="s">'get'</span><span class="p">,</span> <span class="s">'all'</span><span class="p">]}</span>
+</code></pre></div></div>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

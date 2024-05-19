@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Using WIX to create an MSI</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Using WIX to create an MSI</h1>
+  <ul class="flex gap-2">
+    <li>08 March 2019</li>
+    
+      <li><a href="/tag/work">#work</a></li>
+    
+      <li><a href="/tag/deploymets">#deploymets</a></li>
+    
+      <li><a href="/tag/wix">#wix</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>I’ve had the odd rant on twitter before about companies that aim software at education and then provide no MSI to deploy it. I’m not going to repeat that rant here but suffice to say <a href="https://scratch.mit.edu/download">Scratch 3</a> has followed <a href="https://scratch.mit.edu/download/scratch2">Scratch 2</a>’s example of only giving us an exe.</p>
+
+<p>Scratch 3 is <em>RunPointable</em> which is my way of saying the software is all files and just be copied around instead of installed. A lot of software falls into this category and I’ve used a <a href="/2018/12/robocopy">robocopy</a> script in the past to <em>deploy</em> the RunPoints folder. This doesn’t feel great to me. Theres an overhead at each school to setup the script, it doesn’t create shortcuts and its all very <em>manual</em>.</p>
+
+<p>I’ve looked into <a href="http://wixtoolset.org/">Wix</a> in the past and got lost in its config but I decided to wade in again and try to get something working out of it. After a fair bit hacking and slashing I was close to something but it was not pretty. I then spoke to a user on <a href="https://www.edugeek.net">EduGeek</a> who had created the Wix Config for Scratch 3 and he was kind enough to <a href="https://github.com/tweaktech/Scratch-Desktop-MSI">share them</a>. This gave me a <em>working example</em> to go from which was all I needed.</p>
+
+<p>After looking at the config I quickly realsied that with a bit of PowerShell I could edit the xml files and create a msi for <strong>any folder with an exe in it</strong>. So thats what I’ve made.</p>
+
+<p>https://github.com/Ed-ITSolutions/create-msi-installer-from-folder</p>
+
+<p>I’ve been updating the script a lot as I’ve been using it and with the <em>0.0.1</em> release it is pretty stable.</p>
+
+<p>With 0.0.1 I used this command to create the MSI for Scratch 3</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">.</span><span class="n">\create-msi-installer-from-folder.ps1</span><span class="w"> </span><span class="se">`
+</span><span class="nt">-Path</span><span class="w"> </span><span class="s2">"C:\Users\adam\AppData\Local\Programs\scratch-desktop"</span><span class="w"> </span><span class="se">`
+</span><span class="nt">-Product</span><span class="w"> </span><span class="s2">"Scratch 3 Desktop"</span><span class="w"> </span><span class="se">`
+</span><span class="nt">-Version</span><span class="w"> </span><span class="s2">"1.2.1"</span><span class="w"> </span><span class="se">`
+</span><span class="nt">-Executable</span><span class="w"> </span><span class="s2">"Scratch Desktop.exe"</span><span class="w"> </span><span class="se">`
+</span><span class="nt">-Manufacturer</span><span class="w"> </span><span class="s2">"MIT"</span><span class="w"> </span><span class="se">`
+</span><span class="nt">-Contact</span><span class="w"> </span><span class="s2">"Ed-IT Solutions"</span><span class="w"> </span><span class="se">`
+</span><span class="nt">-HelpLink</span><span class="w"> </span><span class="s2">"https://www.ed-itsolutions.com"</span><span class="w"> </span><span class="se">`
+</span><span class="nt">-AboutLink</span><span class="w"> </span><span class="s2">"https://scratch.mit.edu/"</span><span class="w"> </span><span class="se">`
+</span><span class="nt">-DownloadLink</span><span class="w"> </span><span class="s2">"https://scratch.mit.edu/download"</span><span class="w"> </span><span class="se">`
+</span><span class="nt">-Desktop</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Theres a lot of options there but its quite simple.</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Path</code> Sets the folder to build the msi from.</li>
+  <li><code class="language-plaintext highlighter-rouge">Product</code> Is the descriptive name of the product which is used for its folder in <code class="language-plaintext highlighter-rouge">Program Files</code> and its name in Programs and Features.</li>
+  <li><code class="language-plaintext highlighter-rouge">Version</code> is the version of this product. For Scratch 3 (at the time of wiriting) this is <code class="language-plaintext highlighter-rouge">1.2.1</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">Executable</code> is the location of the exe within <code class="language-plaintext highlighter-rouge">Path</code>.</li>
+</ul>
+
+<p>After this all the options are optional.</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Manufacturer</code> is the Manufacturer reported to the client.</li>
+  <li><code class="language-plaintext highlighter-rouge">Contact</code> is the support contact reported to the client.</li>
+  <li><code class="language-plaintext highlighter-rouge">HelpLink</code> is the support address reported to the client.</li>
+  <li><code class="language-plaintext highlighter-rouge">AboutLink</code> is the address of the programs website.</li>
+  <li><code class="language-plaintext highlighter-rouge">DownloadLink</code> is the url of the page to download this program.</li>
+  <li><code class="language-plaintext highlighter-rouge">Desktop</code> is a switch for creating a desktop shortcut during install.</li>
+</ul>
+
+<p>There are more options that can befound in the Readme but this is all I need for Scratch 3.</p>
+
+<p>I’ve already used it to successfully deploy:</p>
+
+<ul>
+  <li>Scratch 3</li>
+  <li><a href="https://www.amazon.co.uk/gp/help/customer/display.html?nodeId=201245960">Amazon Kindle PC</a></li>
+  <li><a href="https://www.bbc.co.uk/iplayer/install">BBC iPlayer Downloads</a></li>
+</ul>
+
+<p>And there are so many more things that I will not use <em>RunPoints</em> for any more. I plan on creating a site with a library of confirmed working software and the commands used to build them but thats a little way off at the moment.</p>
+
+<p>I have quite a few ideas for the future that I will implement as I need them, for example providing a <code class="language-plaintext highlighter-rouge">.reg</code> file to be imported and on complete commands. PRs and suggestions are welcome on the repo and I hope others find it as usefull as we have.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

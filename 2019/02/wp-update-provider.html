@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>WP Update Provider</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">WP Update Provider</h1>
+  <ul class="flex gap-2">
+    <li>14 February 2019</li>
+    
+      <li><a href="/tag/wordpress">#wordpress</a></li>
+    
+      <li><a href="/tag/work">#work</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>Over at Ed-IT Solutions we create <a href="https://www.wordpress.org">WordPress</a> themes and plugins that we need to keep up-to-date on all our clients websites. We used to use a couple of packages together to get the desired results but they had a couple of issues.</p>
+
+<ol>
+  <li>They were outdated and not actively maintained.</li>
+  <li>Both are a <em>download the repo and put it here</em> installs that are hard to maintain.</li>
+  <li>There is no monitoring in the server component.</li>
+</ol>
+
+<p>I decided a while ago that this needed changing, and that the best way to get everything I wanted was to make something myself.</p>
+
+<p>The result of this is WP Update Provider and WUP-Client. We’ve been using some version of this for nearly a year now to great effect.</p>
+
+<h2 id="wp-update-provider">WP Update Provider</h2>
+
+<p>WP Update Provider (WUP) is the first half of the solution I created.</p>
+
+<p>WUP is a plugin that you install on a central WordPress site. For example I have it installed on our <em>management</em> WordPress install which we use to monitor/update/backup the sites we host using MainWP.</p>
+
+<p>WUPs main features that it has over our previous solution are:</p>
+
+<ul>
+  <li>Table showing all packages.</li>
+  <li>Package details screen listing all the sites using the package, when they last checked in and which version they are using.</li>
+  <li>Links to download the latest version of a package.</li>
+  <li>API endpoint for receiving updates from CI.</li>
+</ul>
+
+<p>As WUP is a plugin its extremely easy to install and keep up-to-date.</p>
+
+<p><img src="/assets/2019/02/wp-update-provider/dashboard.png" alt="The Package Screen" /></p>
+
+<h2 id="wup-client">WUP-Client</h2>
+
+<p>The other half of the solution is a composer module that I require in each package. Using composer lets me easily install and update the client in each theme/plugin without having to manually shuffle files around.</p>
+
+<p>WUP-Client provides a function which registers all the filters and hooks to inject updates from WUP into the normal WordPress updater. Using the normal WordPress update system gives our clients a seamless experiance, our updates appear alongside updates from the plugin directory, and can be installed at the same time.</p>
+
+<p>It also has all the code required to build the zip file and publish it to WUP. I use this for an entirely automated deployment process.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p><a href="https://github.com/Ed-ITSolutions/wp-update-provider">WUP Itself</a> is the best example of how to use WUP-Client for updates and deploying.</p>
+
+<h2 id="moving-forward">Moving Forward</h2>
+
+<p>I have some ideas for the future of WUP but it will depened on our usage. It’s running very stabley at the moment and I can’t think of anything it needs to do its current job better.</p>
+
+<p>I have put thought into a license key system for it so you can protect your downloads as currently you just need to know the urls and slug to download anything.</p>
+
+<p>Let us know over on the repo if you have any ideas that would improve WUP and the way you use it.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

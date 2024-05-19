@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Moving to MDX</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Moving to MDX</h1>
+  <ul class="flex gap-2">
+    <li>09 March 2020</li>
+    
+      <li><a href="/tag/gatsby">#gatsby</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p><a href="https://mdxjs.com/">MDX</a> if you haven’t heard of it is an amazing merging between markdown and jsx. It allows you to import and use React components in your markdown, this makes for some amazing posts like <a href="https://kentcdodds.com/blog/avoid-the-test-user">this one</a> by Kent C. Dodds.</p>
+
+<p>I want to add it here so I was going to write up how to add MDX to a Gatsby site that already has a wide range of posts and content.</p>
+
+<p>To start with lets install MDX.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npm <span class="nb">install</span> <span class="nt">--save</span> gatsby-plugin-mdx @mdx-js/mdx @mdx-js/react
+</code></pre></div></div>
+
+<p>So I already have a loads of Gatsby Remark plugins configured for my images and code blocks which I’d like to keep. Thankfully <code class="language-plaintext highlighter-rouge">gatsby-plugin-mdx</code> already supports all <code class="language-plaintext highlighter-rouge">gatsby-transformer-remark</code> plugins out of the box.</p>
+
+<p>At first I thought about running both mdx and markdown side by side but this idea was going to take far more work than it would to simply swap everything to MDX. To that end I removed <code class="language-plaintext highlighter-rouge">gatsby-transformer-remark</code> from my config and renamed every <code class="language-plaintext highlighter-rouge">.md</code> file to <code class="language-plaintext highlighter-rouge">.mdx</code> a task made trivial with <a href="https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename">power rename</a>.</p>
+
+<p>It’s now a case of changing every <code class="language-plaintext highlighter-rouge">allMarkdownRemark</code> and <code class="language-plaintext highlighter-rouge">markdownRemark</code> query to <code class="language-plaintext highlighter-rouge">allMdx</code> and <code class="language-plaintext highlighter-rouge">mdx</code> respectively. I also need to replace the <code class="language-plaintext highlighter-rouge">html</code> in my queries with <code class="language-plaintext highlighter-rouge">body</code> to get the mdx render function.</p>
+
+<p>I used <a href="/2019/05/using-htmr-to-bring-life-to-links-in-gatsby">HTMR to enchance my markdown</a> and this is no longer needed as the MDX rendering components can do the same job. My <code class="language-plaintext highlighter-rouge">Content</code> component now looks like this:</p>
+
+<figure class="highlight"><pre><code class="language-typescript" data-lang="typescript"><span class="k">import</span> <span class="nx">React</span><span class="p">,</span> <span class="p">{</span><span class="nx">ReactHTMLElement</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react</span><span class="dl">'</span>
+<span class="k">import</span> <span class="p">{</span><span class="nx">OutboundLink</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">gatsby-plugin-google-gtag</span><span class="dl">'</span>
+<span class="k">import</span> <span class="p">{</span><span class="nx">Link</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">gatsby</span><span class="dl">'</span>
+<span class="k">import</span> <span class="p">{</span><span class="nx">MDXProvider</span><span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">@mdx-js/react</span><span class="dl">"</span>
+<span class="k">import</span> <span class="p">{</span><span class="nx">MDXRenderer</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">gatsby-plugin-mdx</span><span class="dl">'</span>
+
+<span class="kd">const</span> <span class="nx">Anchor</span> <span class="o">=</span> <span class="p">(</span><span class="nx">props</span><span class="p">:</span> <span class="nx">ReactHTMLElement</span><span class="o">&lt;</span><span class="nx">HTMLAnchorElement</span><span class="o">&gt;</span><span class="p">[</span><span class="dl">"</span><span class="s2">props</span><span class="dl">"</span><span class="p">])</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="p">{</span><span class="nx">href</span><span class="p">}</span> <span class="o">=</span> <span class="nx">props</span>
+
+  <span class="k">if</span><span class="p">(</span><span class="nx">href</span><span class="o">!</span><span class="p">.</span><span class="nf">substr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">http</span><span class="dl">'</span><span class="p">){</span>
+    <span class="k">return</span> <span class="o">&lt;</span><span class="nx">OutboundLink</span> <span class="nx">href</span><span class="o">=</span><span class="p">{</span><span class="nx">href</span><span class="o">!</span><span class="p">}</span><span class="o">&gt;</span><span class="p">{</span><span class="nx">props</span><span class="p">.</span><span class="nx">children</span><span class="p">}</span><span class="o">&lt;</span><span class="sr">/OutboundLink</span><span class="err">&gt;
+</span>  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="o">&lt;</span><span class="nx">Link</span> <span class="nx">to</span><span class="o">=</span><span class="p">{</span><span class="nx">href</span><span class="o">!</span><span class="p">}</span><span class="o">&gt;</span><span class="p">{</span><span class="nx">props</span><span class="p">.</span><span class="nx">children</span><span class="p">}</span><span class="o">&lt;</span><span class="sr">/Link</span><span class="err">&gt;
+</span><span class="p">}</span>
+
+<span class="kd">const</span> <span class="nx">Paragraph</span> <span class="o">=</span> <span class="p">(</span><span class="nx">node</span><span class="p">:</span> <span class="nb">Partial</span><span class="o">&lt;</span><span class="nx">ReactHTMLElement</span><span class="o">&lt;</span><span class="nx">HTMLParagraphElement</span><span class="o">&gt;</span><span class="p">[</span><span class="dl">"</span><span class="s2">props</span><span class="dl">"</span><span class="p">]</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">className</span> <span class="o">=</span> <span class="dl">''</span>
+
+  <span class="k">if</span><span class="p">(</span>
+    <span class="nx">node</span><span class="p">.</span><span class="nx">children</span>
+    <span class="o">&amp;&amp;</span>
+    <span class="p">(</span>
+      <span class="p">(</span>
+        <span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">children</span> <span class="k">as</span> <span class="kr">any</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="o">&amp;&amp;</span>
+        <span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">children</span> <span class="k">as</span> <span class="kr">any</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nx">props</span>
+        <span class="o">&amp;&amp;</span>
+        <span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">children</span> <span class="k">as</span> <span class="kr">any</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nx">props</span><span class="p">.</span><span class="nx">className</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">gatsby-resp-image-wrapper</span><span class="dl">'</span>
+      <span class="p">)</span>
+      <span class="o">||</span>
+      <span class="p">(</span>
+        <span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">children</span> <span class="k">as</span> <span class="kr">any</span><span class="p">).</span><span class="nx">props</span>
+        <span class="o">&amp;&amp;</span>
+        <span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">children</span> <span class="k">as</span> <span class="kr">any</span><span class="p">).</span><span class="nx">props</span><span class="p">.</span><span class="nx">className</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">gatsby-resp-image-wrapper</span><span class="dl">'</span>
+      <span class="p">)</span>
+    <span class="p">)</span>
+  <span class="p">){</span>
+    <span class="nx">className</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">full-width</span><span class="dl">"</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="o">&lt;</span><span class="nx">p</span> <span class="p">{...</span><span class="nx">node</span><span class="p">}</span> <span class="nx">className</span><span class="o">=</span><span class="p">{</span><span class="nx">className</span><span class="p">}</span> <span class="sr">/</span><span class="err">&gt;
+</span><span class="p">}</span>
+
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">Content</span><span class="p">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">FC</span><span class="o">&lt;</span><span class="p">{</span><span class="na">mdx</span><span class="p">:</span> <span class="kr">string</span><span class="p">}</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">({</span><span class="nx">mdx</span><span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="o">&lt;</span><span class="nx">MDXProvider</span>
+    <span class="nx">components</span><span class="o">=</span><span class="p">{{</span>
+      <span class="na">a</span><span class="p">:</span> <span class="nx">Anchor</span><span class="p">,</span>
+      <span class="na">p</span><span class="p">:</span> <span class="nx">Paragraph</span>
+    <span class="p">}}</span>
+  <span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="nx">MDXRenderer</span><span class="o">&gt;</span><span class="p">{</span><span class="nx">mdx</span><span class="p">}</span><span class="o">&lt;</span><span class="sr">/MDXRenderer</span><span class="err">&gt;
+</span>  <span class="o">&lt;</span><span class="sr">/MDXProvider</span><span class="err">&gt;
+</span><span class="p">}</span></code></pre></figure>
+
+<p>Which is pretty similar to the old system, the paragraph tag modifications are from when I moved over to a <a href="/2020/02/css-grid-layout">css grid layout</a>. A slight tweak to each page to rename the <code class="language-plaintext highlighter-rouge">html</code> to <code class="language-plaintext highlighter-rouge">mdx</code> on the <code class="language-plaintext highlighter-rouge">Content</code> component.</p>
+
+<p>So now I can import React components and use them in my posts. As a simple example here is a counter component. It’s using <code class="language-plaintext highlighter-rouge">useState</code> to keep track of the count and prooves just how much power I have now with MDX.</p>
+
+<p>import Demo from ‘./demo’</p>
+
+<Demo />
+
+<p>I did fall into a trap that Gatsby needs to be restarted for MDX to import files, I spent an embarrasingly long time trying to work out why I was getting errors.</p>
+
+<p>You can view the <a href="https://github.com/Arcath/arcath.net-gatsby/commit/4dac6e26813a19409c5356c7bf0a1f77d87551d2">full commit on GitHub</a> which shows all the work that went into moving over to MDX. Most of the commit is renaming <code class="language-plaintext highlighter-rouge">*.md</code> to <code class="language-plaintext highlighter-rouge">*.mdx</code> but the <code class="language-plaintext highlighter-rouge">tsx</code> and <code class="language-plaintext highlighter-rouge">ts</code> file changes will be of interest.</p>
+
+<p>I have some ideas for the new features that MDX will let me use and you will be seeing some posts shortly that use them.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

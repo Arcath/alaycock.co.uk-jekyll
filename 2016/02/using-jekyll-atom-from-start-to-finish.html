@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Using Jekyll Atom from start to finish</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Using Jekyll Atom from start to finish</h1>
+  <ul class="flex gap-2">
+    <li>25 February 2016</li>
+    
+      <li><a href="/tag/jekyll-atom">#jekyll-atom</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p><a href="https://github.com/arcath/Jekyll-Atom">Jekyll-Atom</a> is my <a href="https://atom.io/">Atom</a> package for working with <a href="http://jekyllrb.com/">Jekyll</a> (as the name implies).</p>
+
+<p>It makes working Jekyll a breeze but I have a had a couple of questions about how some of it works, so I am going to walk though the writing of this post.</p>
+
+<p>First off with Atom open in this site I bring up the command palette <code class="language-plaintext highlighter-rouge">Ctrl-Shift-P</code> and type in <em>New Post</em></p>
+
+<p><img src="/assets/2016/02/using-jekyll-atom-from-start-to-finish/how-to-1.png" alt="New Post Box" /></p>
+
+<p>Hitting enter brings up the new post dialog which I give the title and tick the box to say this post will be a draft.</p>
+
+<p><img src="/assets/2016/02/using-jekyll-atom-from-start-to-finish/how-to-2.png" alt="Post title box" /></p>
+
+<p>Hitting enter here will create <code class="language-plaintext highlighter-rouge">_dratfs/2016-02-03-using-jekyll-atom-from-start-to-finish.markdown</code> with the front matter already in it and open it in Atom for you.</p>
+
+<p>Now I start to write this post which takes little explaining. I did how ever want to preview the post as a wrote it which I did using the preview server in Jekyll Atom. Searching for <em>Toggle Server</em> in the command palette and hitting Enter starts it up.</p>
+
+<p><img src="/assets/2016/02/using-jekyll-atom-from-start-to-finish/how-to-3.png" alt="Run the server" /></p>
+
+<p>A couple of notifications appear straight away telling me that the server is running and Jekyll is starting to build my site.</p>
+
+<p><img src="/assets/2016/02/using-jekyll-atom-from-start-to-finish/how-to-4.png" alt="Notifications" /></p>
+
+<p>Jekyll-Atom is also listening for any save events in Atom and will build the site again as soon as it sees one.</p>
+
+<p>This means after hitting save my site is normally built ready to preview in the time it takes to <code class="language-plaintext highlighter-rouge">alt-tab</code> into Chrome and refresh the page.</p>
+
+<blockquote>
+  <p>You may need to add <code class="language-plaintext highlighter-rouge">show_drafts: true</code> to your <code class="language-plaintext highlighter-rouge">_config.yml</code> to have drafts appear.</p>
+</blockquote>
+
+<p>Now that this post is written it is time to publish it, moving it from <em>drafts to _posts which Jekyll-Atom does through the _Publish Draft</em> command.</p>
+
+<p><img src="/assets/2016/02/using-jekyll-atom-from-start-to-finish/how-to-5.png" alt="Publish Draft" /></p>
+
+<p>Jekyll-Atom also updates the date/time to the current date/time as it publishes saving a bit of time updating it myself.</p>
+
+<p>One last check of the preview site with the new URL for the post and everything is ready to commit!</p>
+
+<p>That covers most of the features I use on a day to day basis but there are quite a few more detailed in the <a href="https://github.com/Arcath/jekyll-atom/blob/master/README.md#functions">Readme</a> which I encourage you to read.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

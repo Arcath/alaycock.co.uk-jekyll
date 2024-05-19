@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>ADSync Service Missing on Server</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">ADSync Service Missing on Server</h1>
+  <ul class="flex gap-2">
+    <li>15 June 2021</li>
+    
+      <li><a href="/tag/azure">#azure</a></li>
+    
+      <li><a href="/tag/adsync">#adsync</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>I came into one of my schools to find this message in Office365.</p>
+
+<p><img src="/assets/2021/06/adsync-missing/error.png" alt="ADSync Error" /></p>
+
+<p><em>Strange</em>.</p>
+
+<p>Jumped onto the server and tried to open the <em>Syncronization Service</em> and no,
+<em>Service ADSync was not found</em>.</p>
+
+<p>Opening services showed that there was no service with the ID <em>ADSync</em>. A quick
+<code class="language-plaintext highlighter-rouge">sc start ADSync</code> agreeed, that service did not exist.</p>
+
+<p>I ran through quite a few things that had no effect and was begining to fear the
+initial suggestion from ADSync of “rebuild the server” was going to have to be
+the solution, which would mean not fixing it for a long time.</p>
+
+<h2 id="logon-as-a-service">Logon as a Service</h2>
+
+<p>I came across
+<a href="https://community.spiceworks.com/topic/2227261-azure-ad-connect-synchronization-service-is-missing">this discussion</a>
+about the issue and this all too helpful reply.</p>
+
+<blockquote>
+  <p>I figured out the solution.</p>
+
+  <p>The service was failing to start because the service account wasn’t granted
+the Logon as a Service right.</p>
+
+  <p>Added the account to the GPO and it was running again.</p>
+
+  <p>Thank you for the help!</p>
+</blockquote>
+
+<p><img src="/assets/2021/06/adsync-missing/wisdom_of_the_ancients.png" alt="Relevant XKCD" /> <em>There is always a
+<a href="https://xkcd.com/979/">relevant XKCD</a></em></p>
+
+<p>It did point me in the right direction.</p>
+
+<p>ADSync creates a user in AD that it uses to sync with Azure, this account is the
+account the service runs as and as the above answer suggested you need to give
+this account permission to “logon as a service”.</p>
+
+<p>The user ADSync creates is named <code class="language-plaintext highlighter-rouge">AAD_{SOMEID}</code> or <code class="language-plaintext highlighter-rouge">MSOL_{SOMEID}</code> and will be in the default user
+location.</p>
+
+<p>Microsoft have an article on
+<a href="https://docs.microsoft.com/en-us/system-center/scsm/enable-service-log-on-sm?view=sc-sm-2019">how to give a user logon as a service</a>
+which uses the local security policy on the server.</p>
+
+<p>After adding the user and restarting the server everything is syncing again!</p>
+
+<p><img src="/assets/2021/06/adsync-missing/all-fixed.png" alt="All fixed and working again" /></p>
+
+<p>I hope this helps anyone stuck in the same position.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

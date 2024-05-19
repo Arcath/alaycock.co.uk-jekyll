@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Screeps Part 1 – RC1 & RC2</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Screeps Part 1 – RC1 & RC2</h1>
+  <ul class="flex gap-2">
+    <li>15 November 2016</li>
+    
+      <li><a href="/tag/screeps">#screeps</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>Screeps is an MMO RTS aimed at programmers. Unlike traditional games you don’t have direct control over your units. You instead write a program to govern their movements and actions.</p>
+
+<p><img src="/assets/2016/11/screeps-part-1-rc1-rc2/screeps.gif" alt="Screeps Logo" /></p>
+
+<p>The target market for Screeps is very narrow but to someone like myself it is an amazing game. Over the past few days, I have fallen for this game. I like having it open just to watch my creeps go about their business. <em>If anyone from screeps is reading this, a screeps screensaver that shows a given room would be awesome.</em></p>
+
+<p>When you select your first room and place your first spawn you start with an empty loop function. It is your job to write the code for this.</p>
+
+<h2 id="rc1">RC1</h2>
+
+<p><img src="/assets/2016/11/screeps-part-1-rc1-rc2/rc0.png" alt="My Screeps Room" /></p>
+
+<p>For the first Room Control Level, I ran the tutorial code with a couple of minor changes. At this point, I was still reading <a href="http://support.screeps.com/hc/en-us/categories/200506391-Documentation">the docs</a> and had run into an issue that needed addressing straight away.</p>
+
+<p><img src="/assets/2016/11/screeps-part-1-rc1-rc2/blocked.png" alt="Creeps can't get to the source" /></p>
+
+<p>The tutorial code didn’t handle what to do if there were no jobs to complete. My builders and harvesters were waiting in the only spot I can gather resources from for something to do. This usually meant waiting until the unit in that square died and I had to spawn a new one.</p>
+
+<h2 id="rc2">RC2</h2>
+
+<p>Arriving at RC2 happened without me thinking it would. I hadn’t fixed the earlier problem and it was dumb luck that the upgrader ended up at the front of the queue enough times to upgrade the Room Controller.</p>
+
+<p>The short term solution was to give everyone something to do. This meant building extensions. Extensions would allow me to store more energy and give the builder something to do.</p>
+
+<p>I quickly realised that I needed to change tactic. The harvesters still blocked everything up when spawn was full of resources and until the first extension finished being built they had nowhere else to go. At this point, I decided to change to only having the harvesters go to the energy points. I changed the builder &amp; upgrader code so that they would withdraw energy from spawn instead of harvesting it. I needed a safety check so they didn’t empty spawn and prevent me creating new creeps but after that everything went a lot smoother.</p>
+
+<p>After I had 4 extensions up and running I changed the upgrader/builder code again to withdraw from extensions only. This ran very well overnight with all my construction projects finishing.</p>
+
+<p>I was now 25% of the way to RC3 which takes a huge (to me) amount of energy.</p>
+
+<p>I added some containers and changed all my creeps over to withdrawing from them. This saved all the energy in my spawn &amp; extensions for building creeps which let me build bigger harvesters that could carry more and work faster.</p>
+
+<p><img src="/assets/2016/11/screeps-part-1-rc1-rc2/startofabase.png" alt="Start of a base" /></p>
+
+<h2 id="rc2-efficiency">RC2 Efficiency</h2>
+
+<p>I now had a few efficiency issues. Mainly:</p>
+
+<ul>
+  <li>Harvesters only looked for drop off locations if they were full. This meant they would travel to my extensions and drop off 50 units and then carried 50 units back to the source.</li>
+  <li>Builders would sit around when there was no building to do.</li>
+  <li>Re-Building roads when they died was slowing things down.</li>
+  <li>Harvesters preferred containers. This meant I could end up with not enough energy to spawn a new creep.</li>
+</ul>
+
+<p>Solving number 1 required the addition of a drop off mode. Once in drop off mode a harvester will search for all drop offs that need filling until it is empty at which point it returns to the source to refill.</p>
+
+<p>3 needed a new type of creep. A healer that could repair any structure. They fill up from a container and then find the nearest structure that needs repairing. Of course when there are no buildings to repair healers have the same issue as builders (2).</p>
+
+<p>To fix 2 I chained the roles. If a builder is able to build but has nothing to build it runs the healer function becoming a healer. Healers in the same situation then run the upgrader code. So assuming everything is repaired and built I end up with a whole fleet on upgraders.</p>
+
+<p>To get 4 sorted I added a sort to the targets list in harvesters. They would now fill spawns, then extensions and finally containers.</p>
+
+<h2 id="get-screeps">Get Screeps</h2>
+
+<p>You can follow my progress on <a href="https://screeps.com/a/#!/profile/Arcath">my profile</a>. Once I reach RC3 I will be throwing down some more extensions and building bigger creeps.</p>
+
+<p>You can read more about Screeps on their <a href="https://screeps.com/">site</a>. I purchased it through steam giving me the permanent 10 CPU and the desktop client (which I don’t really use).</p>
+
+<p>You can see my code as it was at the end of this post <a href="https://github.com/Arcath/screeps-code/tree/7d6170e4f51ae6751d3dac0db55f5f11c099fe31">here</a>.</p>
+
+<h2 id="what-is-next">What is Next?</h2>
+
+<p>For RC3 I am going to focus on speed. I can’t claim more rooms until I raise my GCL (Global Control Level) which takes a ton of energy. More Energy, Faster.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

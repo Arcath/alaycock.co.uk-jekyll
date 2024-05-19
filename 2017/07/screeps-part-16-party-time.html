@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Screeps Part 16 – Faster in an Alliance</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Screeps Part 16 – Faster in an Alliance</h1>
+  <ul class="flex gap-2">
+    <li>14 July 2017</li>
+    
+      <li><a href="/tag/screeps">#screeps</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>This is part 16 of my Screeps story, you can read the whole story <a href="/tag/screeps">here</a>.</p>
+
+<h2 id="pathfindercostmatrix">PathFinder.CostMatrix</h2>
+
+<p>To the south of my main rooms, there is a room with no spawn and a bunch of structures from a player who has not hit respawn after dying. This is great news for me.</p>
+
+<p><img src="/assets/2017/07/screeps-part-16-party-time/full-storage.png" alt="A full storage of energy" /></p>
+
+<p>I can withdraw from that storage and take the energy back to one of my rooms. The problem is that to do that I need to go through 2 source keeper rooms. Which when following the default path means my creeps get destroyed by the NPCs. I need to tell my creeps not to go anywhere near the source keepers but still pass through the room.</p>
+
+<p>The way to do this is to create my own <code class="language-plaintext highlighter-rouge">CostMatrix</code> for the room. A cost matrix is how Screeps decides which path to take, aiming for the lowest cost path to the target. This is why a creep will go around a small swamp and through a big one.</p>
+
+<p>I added an orange and white flag handler that will look for source keepers in a room and then creates a 5 tile <em>mega swamp</em> around them.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">sources</span> <span class="o">=</span> <span class="nx">flag</span><span class="p">.</span><span class="nx">room</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="nx">FIND_SOURCES</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">minerals</span> <span class="o">=</span> <span class="nx">flag</span><span class="p">.</span><span class="nx">room</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="nx">FIND_MINERALS</span><span class="p">)</span>
+
+<span class="kd">var</span> <span class="nx">avoids</span> <span class="o">=</span> <span class="p">[].</span><span class="nf">concat</span><span class="p">(</span><span class="nx">sources</span><span class="p">,</span> <span class="nx">minerals</span><span class="p">)</span>
+
+<span class="nx">_</span><span class="p">.</span><span class="nf">forEach</span><span class="p">(</span><span class="nx">avoids</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">avoid</span><span class="p">){</span>
+  <span class="kd">var</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">avoid</span><span class="p">.</span><span class="nx">pos</span><span class="p">.</span><span class="nx">x</span> <span class="o">-</span> <span class="mi">5</span>
+  <span class="kd">var</span> <span class="nx">yStart</span> <span class="o">=</span> <span class="nx">avoid</span><span class="p">.</span><span class="nx">pos</span><span class="p">.</span><span class="nx">y</span> <span class="o">-</span> <span class="mi">5</span>
+
+  <span class="k">while</span><span class="p">(</span><span class="nx">x</span> <span class="o">&lt;=</span> <span class="nx">avoid</span><span class="p">.</span><span class="nx">pos</span><span class="p">.</span><span class="nx">x</span> <span class="o">+</span> <span class="mi">5</span><span class="p">){</span>
+    <span class="kd">var</span> <span class="nx">y</span> <span class="o">=</span> <span class="nx">yStart</span>
+    <span class="k">while</span><span class="p">(</span><span class="nx">y</span> <span class="o">&lt;=</span> <span class="nx">avoid</span><span class="p">.</span><span class="nx">pos</span><span class="p">.</span><span class="nx">y</span> <span class="o">+</span> <span class="mi">5</span><span class="p">){</span>
+      <span class="nx">matrix</span><span class="p">.</span><span class="nf">set</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+      <span class="nx">y</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="p">}</span>
+    <span class="nx">x</span> <span class="o">+=</span> <span class="mi">1</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</code></pre></div></div>
+
+<p>This is double the cost of going through a swamp. This is so that creeps will go through a swamp to avoid a source keeper. I could have used 255 to make the area impassable but that might have resulted in rooms with no path through.</p>
+
+<p><img src="/assets/2017/07/screeps-part-16-party-time/avoid.png" alt="Thread the needle" /></p>
+
+<h2 id="parties">Parties</h2>
+
+<p>Something I have only touched in the past is the idea of groups of creeps. Back in <a href="/2016/11/screeps-part-6-poking-enemy/">part 6</a> I created a group of thugs that would go in and clear a source keeper, the code was not brilliant and they separated en route.</p>
+
+<p>When I drop a white flag it acts as a rallying point for the party. The second colour of the flag maps to an array for that parties required creeps. Once all the creeps have made it to the rallying point they get changed into act mode heading to the flag named by the rally flag.</p>
+
+<h2 id="calling-for-aid">Calling for Aid</h2>
+
+<p>I keep putting this job off. Twice now I’ve had major problems because one of my remote mined rooms gets attacked and I pump creeps into it to die and waste all my energy.</p>
+
+<p>This needs fixing.</p>
+
+<p>So step 1 is calling for aid from another room which with my AI is really easy. If a remote worker sees a hostile creep it drops a red flag (only if there isn’t one already). The defender code then springs into action and spawns a defender in the nearest spawn and sends it over.</p>
+
+<p>Next step is to not spawn anything for that room whilst it has red flags in it. This should mean that a defender hurries along, kills the NPC invader and once it’s safe again the miners come back. Of course, this falls over when it’s another player’s hostile creeps that triggers the action. But sending defenders to fight them might save the day before my towers get involved.</p>
+
+<h2 id="remote-mining">Remote Mining</h2>
+
+<p>I’ve been struggling to make my remote mining profitable, but I think I’ve finally cracked it.</p>
+
+<p>The original miners will now look for a container at the source to drop off instead. If there is a container a hauler with a single work part is spawned which then moves energy back to the main room. If there is more than 1000 energy in the container a second hauler is spawned to drain the container faster.</p>
+
+<p>Now that I have RCL5 in some of my rooms I’ve deployed links to speed up delivery even more.</p>
+
+<p>The result is profit!</p>
+
+<p><img src="/assets/2017/07/screeps-part-16-party-time/mining.png" alt="Mining Revenue" /></p>
+
+<h2 id="joining-an-alliance">Joining an Alliance</h2>
+
+<p>I’ve been caught in alliance wars before. I was attacked last time because of increasing pressure on the other side of the other player from an alliance.</p>
+
+<p>So if you can’t beat them join them.</p>
+
+<p>Spawn More Overlords are a mid-sized alliance with a few members in the northern area of the map. They are my closest alliance after this respawn and seem pretty friendly.</p>
+
+<p><img src="/assets/2017/07/screeps-part-16-party-time/smo.gif" alt="Spawn More Overlords!" /></p>
+
+<p>I’ve been very happy with Overlords. If your up in the northern area of the map look us up.</p>
+
+<h2 id="aggression">Aggression</h2>
+
+<p><a href="https://screeps.com/a/#!/profile/user502">user502</a> has not taken to my new room very well. They sent a few creeps into my new room and attacked the walls (not the best target). My defenders repelled the first wave but they have a much shorter travel time to get into my room and after their forces built up a bit my DEFCON system triggered a safe mode.</p>
+
+<p>They have become the test for my party system.</p>
+
+<p>After rallying in my new room two of my creeps went through and attacked his wall.</p>
+
+<p><img src="/assets/2017/07/screeps-part-16-party-time/hitthewall.png" alt="Creeps Smash" /></p>
+
+<p>They died shortly after, but its a start.</p>
+
+<p>The flags still exist so my other rooms spawned 2 more creeps who will meet up and try again. They began repairing the wall which meant the second party met with a similar fate. A random NPC spawned and began helping out! The more energy they have to spend between my attacks the better.</p>
+
+<p><img src="/assets/2017/07/screeps-part-16-party-time/npcaid.png" alt="Thanks NPCs" /></p>
+
+<p>On the third try, there was no wall to break through but they still died in transit. The energy I can see in the room is going down which means at some point his tower will run out of ammo. I would be better off trying to tank the tower with a self-healing creeps so I added the tank class.</p>
+
+<h2 id="under-attack">Under Attack</h2>
+
+<p>I was going to focus on clearing out user502 but that plan has changed.</p>
+
+<p>Another player GetSome has been poking me through the portal in the centre of the area I’m based in. His attacks started out as an annoyance slowing my progress but he just stepped up his game.</p>
+
+<p><img src="/assets/2017/07/screeps-part-16-party-time/thepain.png" alt="Some very painful creeps" /></p>
+
+<p>This is going to be interesting to repel. On the outer edge of my alliance, I’m mostly alone in this fight with rooms well below GetSome’s level.</p>
+
+<p>I’m going to leave the result of this fight to the next part.</p>
+
+<h2 id="get-screeps">Get Screeps</h2>
+
+<p>You can follow my progress on <a href="https://screeps.com/a/#!/profile/Arcath">my profile</a>. Once I reach RC4 I’m not sure how I am going to progress yet.</p>
+
+<p>You can read more about Screeps on their <a href="https://screeps.com/">site</a>. I purchased it through steam giving me the permanent 10 CPU and the desktop client.</p>
+
+<p>You can see my code as it was at the end of this post <a href="https://github.com/Arcath/screeps-code/tree/c885b670685bf99280649c78ba67668253b8bb02">here</a>.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

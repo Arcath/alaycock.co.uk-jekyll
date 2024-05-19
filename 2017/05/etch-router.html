@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Etch Router</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Etch Router</h1>
+  <ul class="flex gap-2">
+    <li>23 May 2017</li>
+    
+      <li><a href="/tag/node">#node</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p><a href="https://github.com/atom/etch">Etch</a> is Atom’s system for updating the DOM. Like other DOM managers (e.g. React) it uses javascript to define a DOM structure and then applies it to a given DOM node. When the state of the page changes Etch computes the required changes to the DOM and then applies them.</p>
+
+<p>The Etch ecosystem is pretty small at the moment. Whilst Atom makes heavy use of it not much else does and you are going to have to write a lot of utility code to make full use of it.</p>
+
+<p>Etch Router is my submission into this ecosystem.</p>
+
+<p>Etch Router is built using Etch components which allows you build your routes in the same way as you build anything else. This is the same as react-router which honestly is where I got my inspiration.</p>
+
+<h2 id="using-it">Using It</h2>
+
+<p>Etch-Router is available on npm. Etch is a peer dependency and needs installing by you as well, this gives you control of the etch version in your project.</p>
+
+<blockquote>
+  <p>npm install –save etch etch-router</p>
+</blockquote>
+
+<p>Once it is installed require its components and begin building!</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">etch</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">etch</span><span class="dl">'</span><span class="p">)</span>
+<span class="kd">const</span> <span class="p">{</span><span class="nx">Route</span><span class="p">,</span> <span class="nx">Router</span><span class="p">}</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">etch-router</span><span class="dl">'</span><span class="p">)</span>
+
+<span class="kd">const</span> <span class="nx">Layout</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">./layout</span><span class="dl">'</span><span class="p">)</span> <span class="err">#</span> <span class="nx">Require</span> <span class="nx">your</span> <span class="nx">Etch</span> <span class="nx">Components</span>
+<span class="kd">const</span> <span class="nx">Home</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">./home</span><span class="dl">'</span><span class="p">)</span>
+<span class="kd">const</span> <span class="nx">About</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">./about</span><span class="dl">'</span><span class="p">)</span>
+
+<span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Router</span><span class="p">(</span>
+  <span class="p">{},</span>
+  <span class="k">new</span> <span class="nc">Route</span><span class="p">(</span>
+    <span class="p">{</span><span class="na">path</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">,</span> <span class="na">component</span><span class="p">:</span> <span class="nx">Layout</span><span class="p">},</span>
+    <span class="k">new</span> <span class="nc">Route</span><span class="p">({</span><span class="na">path</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">,</span> <span class="na">component</span><span class="p">:</span> <span class="nx">Home</span><span class="p">}),</span>
+    <span class="k">new</span> <span class="nc">Route</span><span class="p">({</span><span class="na">path</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/about</span><span class="dl">'</span><span class="p">,</span> <span class="na">component</span><span class="p">:</span> <span class="nx">About</span><span class="p">})</span>
+  <span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<p>This is a very quick example which doesn’t touch on half of Etch Routers features. For a better guide see the quick start guide in the docs.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>I used Etch-Router with Jekyll to create the <a href="http://etch-router.arcath.net">docs site</a>. This site uses all the hooks and features to create a nice UI.</p>
+
+<p>In our <a href="/2016/11/electron-app-customer-support/">Customer Support App</a>, I swapped out React &amp; React-Router for Etch &amp; Etch-Router which was rather painless. After doing so the renderer webpack bundle went from 1.2MB to 414KB which is a pretty huge saving. Functionally there is no difference to the end user and I only needed to add a couple of functions to make Etch work a bit more like react.</p>
+
+<p>My main addition to all my components was a setProp function which works the same as react’s setState.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">setProp</span><span class="p">(</span><span class="nx">props</span><span class="p">){</span>
+  <span class="kd">var</span> <span class="nx">newProps</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nf">assign</span><span class="p">({},</span> <span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">,</span> <span class="nx">props</span><span class="p">)</span>
+  <span class="k">this</span><span class="p">.</span><span class="nf">update</span><span class="p">(</span><span class="nx">newProps</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>As you can see this merges the new props with the old ones and then triggers an update of the component.</p>
+
+<h2 id="the-future">The Future</h2>
+
+<p>I have plans for how Etch-Router can be used in the long run. I can see me dropping a few more etch-* packages on NPM as I use Etch Router in more and more places.</p>
+
+<p>As always the source is available on <a href="https://github.com/Arcath/etch-router">GitHub</a> and I welcome PRs with fixes &amp; new features. The docs are hosted on GitHub pages <a href="http://etch-router.arcath.net/">here</a>.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Screeps Part 6 – Poking the Enemy</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Screeps Part 6 – Poking the Enemy</h1>
+  <ul class="flex gap-2">
+    <li>30 November 2016</li>
+    
+      <li><a href="/tag/screeps">#screeps</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>This is part 6 of my Screeps story, you can read the whole story <a href="/tag/screeps">here</a>.</p>
+
+<h2 id="danger-harvesters">Danger Harvesters</h2>
+
+<p><a href="https://screeps.com/a/#!/room/W26N66">W26N66</a> is the room directly below my main room. It has 3 energy sources and a utrium mine with extractor already in place.</p>
+
+<p>It also has NPC creeps that guard the room.</p>
+
+<p><img src="/assets/2016/11/screeps-part-6-poking-enemy/some-painful-creeps.png" alt="Some Painful Creeps" /></p>
+
+<p>To beat these creeps and take the resources is going to require a new kind of creep.</p>
+
+<p>At RC5 I have 1,800 energy to play with when spawning a creep. Before I design my new creep lets analyse the enemy.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Part</th>
+      <th style="text-align: center">Cost</th>
+      <th>Effect</th>
+      <th style="text-align: center">Quatity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Tough</td>
+      <td style="text-align: center">10</td>
+      <td>Extra HP</td>
+      <td style="text-align: center">17</td>
+    </tr>
+    <tr>
+      <td>Move</td>
+      <td style="text-align: center">50</td>
+      <td>Decreases Fatigue by 2 per tick</td>
+      <td style="text-align: center">13</td>
+    </tr>
+    <tr>
+      <td>Attack</td>
+      <td style="text-align: center">80</td>
+      <td>Deal 30 damage at range 1 per tick</td>
+      <td style="text-align: center">10</td>
+    </tr>
+    <tr>
+      <td>Ranged Attack</td>
+      <td style="text-align: center">150</td>
+      <td>Deal Damage, dependent on range</td>
+      <td style="text-align: center">10</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>That creep comes out at a cost of 3,120 energy. Which is nearly double what I can spend on a creep. My initial idea of a single creep is not going to work. I’m going to need a small army to take this room.</p>
+
+<p>The first step is a unit to bring the pain. I need to be able to kill them before their friends come and join the fight.</p>
+
+<h2 id="the-thug">The Thug</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Part</th>
+      <th style="text-align: center">Cost</th>
+      <th>Effect</th>
+      <th style="text-align: center">Quatity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Tough</td>
+      <td style="text-align: center">10</td>
+      <td>Extra HP</td>
+      <td style="text-align: center">14</td>
+    </tr>
+    <tr>
+      <td>Move</td>
+      <td style="text-align: center">50</td>
+      <td>Decreases Fatigue by 2 per tick</td>
+      <td style="text-align: center">9</td>
+    </tr>
+    <tr>
+      <td>Attack</td>
+      <td style="text-align: center">80</td>
+      <td>Deal 30 damage at range 1 per tick</td>
+      <td style="text-align: center">12</td>
+    </tr>
+    <tr>
+      <td>Heal</td>
+      <td style="text-align: center">250</td>
+      <td>Heals 12 damage per tick</td>
+      <td style="text-align: center">1</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>That’s exactly 1,800 energy in a handy little package.</p>
+
+<p>One on one these creeps will most likely loose, but I can code the to hunt in packs. The heal part is there so they can go on longer deployments and hopefully a single pack will kill more than 1 creep.</p>
+
+<p>My only fear is one of cost. Building these creeps is going to affect my energy supply quite a bit especially with my second room not contributing anymore. I don’t want a repeat of the near miss from last time.</p>
+
+<p>The first part of the code for these is to go to the desired exit and wait for the rest of the pack.</p>
+
+<p><img src="/assets/2016/11/screeps-part-6-poking-enemy/thug.png" alt="The Thug" /></p>
+
+<p>The opening battle went ok…</p>
+
+<p><img src="/assets/2016/11/screeps-part-6-poking-enemy/battle.png" alt="Fight!" /></p>
+
+<p>One of my creeps died. Its fate was sealed before the second creep made it to the battle. Pathing seemed to get a little messed up with them bouncing off each other trying to get to the same spot.</p>
+
+<p>Pathing definitely needs improving before I send another wave in. On the plus side, the single heal part was able to fully repair the surviving creep before the NPC respawned.</p>
+
+<h2 id="reaching-the-limit">Reaching the Limit</h2>
+
+<p>I’m hitting the limits of my code at the moment. My growth rate is down, my creeps make silly decisions and my CPU spikes very high.</p>
+
+<p>I’ve narrowed my problems down a bit but they are at the heart of how my AI works.</p>
+
+<ul>
+  <li>Creeps go for the same bit of work.
+    <ul>
+      <li>Take Harvesters for example both harvesters will walk through fire to get to the same container only to have which ever got there first taking its load and the other then heading off to another source.</li>
+      <li>When building all the creeps would walk to the other side of the room with a full energy supply for the first one to drop the last 50 energy into the site. Everyone then decides to upgrade and walk back again.</li>
+      <li>This all comes from a lack of direction, every creep runs the same function and comes up with the same answer.</li>
+    </ul>
+  </li>
+  <li>My do it all creeps are the embodiment of Jack of all trades master of none.
+    <ul>
+      <li>Upgraders &amp; Harvesters can work more carry less.</li>
+      <li>They do make good builders.</li>
+    </ul>
+  </li>
+  <li>Creeps change target mid walk.
+    <ul>
+      <li>Haulers could be 2 moves away from their destination only to have a higher priority target jump the queue and have them turn around and head to another destination. Great when a tower needs energy to keep the room safe, a pain when the upgraders don’t get their energy supply because a tower healed something.</li>
+    </ul>
+  </li>
+  <li>I never did implement that defcon system.</li>
+</ul>
+
+<p>The core of the issue is I have no directors. A director would decide on a job for a creep, record it and send it off to do it. When a new job appears the director will either reassign a creep or leave the job in a pile until a creep is free to do it.</p>
+
+<p>There is also very little automation at the higher level. I still manually place buildings, lay the roads, decide which rooms to use. My AI should be able to take this on itself.</p>
+
+<p>Part 7 is going to detail a complete rewrite of my AI.</p>
+
+<h2 id="get-screeps">Get Screeps</h2>
+
+<p>You can follow my progress on <a href="https://screeps.com/a/#!/profile/Arcath">my profile</a>. Once I reach RC4 I’m not sure how I am going to progress yet.</p>
+
+<p>You can read more about Screeps on their <a href="https://screeps.com/">site</a>. I purchased it through steam giving me the permanent 10 CPU and the desktop client.</p>
+
+<p>You can see my code as it was at the end of this post <a href="https://github.com/Arcath/screeps-code/tree/09fb0457a6575056f70e282aff8cc70ecfebce4a">here</a>.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

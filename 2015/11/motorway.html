@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Motorway</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Motorway</h1>
+  <ul class="flex gap-2">
+    <li>10 November 2015</li>
+    
+      <li><a href="/tag/motorway">#motorway</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>Motorway provides flow control for your node applications through Junctions and Actions.</p>
+
+<p>Motorway was created to streamline my application launchers. I found that I normally ended up with a main.js that looked like this:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">Database</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">db/database</span><span class="dl">'</span><span class="p">)</span>
+
+<span class="nx">Database</span><span class="p">.</span><span class="nf">init</span><span class="p">()</span>
+
+<span class="nx">app</span> <span class="o">=</span> <span class="nc">Express</span><span class="p">()</span>
+
+<span class="nx">RouterA</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">routes/routerA</span><span class="dl">'</span><span class="p">)</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nf">use</span><span class="p">(</span><span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">,</span> <span class="nx">RouterA</span><span class="p">)</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nf">listen</span><span class="p">(</span><span class="mi">3000</span><span class="p">)</span>
+
+<span class="c1">//and so on</span>
+</code></pre></div></div>
+
+<p>Which got messy and ambiguos. At no point does the code imply that <code class="language-plaintext highlighter-rouge">Database.init()</code> has to happen before requiring routers it just does in this case. I would also then be duplicating most of this in my tests without <code class="language-plaintext highlighter-rouge">app.listen(3000)</code> so I could test app instead of running it.</p>
+
+<p>This left a bit too much code outside my test coverage for my liking so I needed to make it re-usable which quickly lead to:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">myApp</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">./lib/myApp</span><span class="dl">'</span><span class="p">)</span>
+
+<span class="nx">myApp</span><span class="p">.</span><span class="nf">initDatabase</span><span class="p">()</span>
+<span class="nx">myApp</span><span class="p">.</span><span class="nf">initExpress</span><span class="p">()</span>
+<span class="nx">myApp</span><span class="p">.</span><span class="nf">loadMiddleware</span><span class="p">()</span>
+<span class="nx">myApp</span><span class="p">.</span><span class="nf">loadRouters</span><span class="p">()</span>
+<span class="nx">myApp</span><span class="p">.</span><span class="nf">loadErrorMiddleware</span><span class="p">()</span>
+<span class="nx">myApp</span><span class="p">.</span><span class="nf">launch</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>Nicer but still nothing in-code that implies the right order. Cue <a href="https://github.com/Arcath/Motorway">Motorway</a> which solves all this:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">Motorway</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">motorway</span><span class="dl">'</span><span class="p">)</span>
+
+<span class="nx">Database</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">./database</span><span class="dl">'</span><span class="p">)</span>
+<span class="nx">Express</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">express</span><span class="dl">'</span><span class="p">)</span>
+
+<span class="nx">app</span> <span class="o">=</span> <span class="kc">null</span>
+<span class="nx">mway</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Motorway</span>
+
+<span class="nx">mway</span><span class="p">.</span><span class="nf">addJunction</span><span class="p">(</span><span class="dl">'</span><span class="s1">init</span><span class="dl">'</span><span class="p">)</span>
+<span class="nx">mway</span><span class="p">.</span><span class="nf">addJunction</span><span class="p">(</span><span class="dl">'</span><span class="s1">configure</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">init</span><span class="dl">'</span><span class="p">])</span>
+<span class="nx">mway</span><span class="p">.</span><span class="nf">addJunction</span><span class="p">(</span><span class="dl">'</span><span class="s1">launch</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">configure</span><span class="dl">'</span><span class="p">])</span>
+
+<span class="nx">mway</span><span class="p">.</span><span class="nf">addAction</span><span class="p">(</span><span class="dl">'</span><span class="s1">init</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="nx">_runner</span> <span class="o">=</span> <span class="k">this</span>
+    <span class="nx">Database</span><span class="p">.</span><span class="nf">init</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+        <span class="nx">_runner</span><span class="p">.</span><span class="nf">rejoin</span><span class="p">()</span>
+    <span class="p">})</span>
+<span class="p">})</span>
+
+<span class="nx">mway</span><span class="p">.</span><span class="nf">addAction</span><span class="p">(</span><span class="dl">'</span><span class="s1">init</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="nx">app</span> <span class="o">=</span> <span class="nc">Express</span><span class="p">()</span>
+    <span class="k">this</span><span class="p">.</span><span class="nf">rejoin</span><span class="p">()</span>
+<span class="p">})</span>
+
+<span class="nx">mway</span><span class="p">.</span><span class="nf">addAction</span><span class="p">(</span><span class="dl">'</span><span class="s1">configure</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="nx">RouterA</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">./routers/routera</span><span class="dl">'</span><span class="p">)</span>
+
+    <span class="nx">app</span><span class="p">.</span><span class="nf">use</span><span class="p">(</span><span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">,</span> <span class="nx">RouterA</span><span class="p">)</span>
+<span class="p">})</span>
+
+<span class="nx">mway</span><span class="p">.</span><span class="nf">addAction</span><span class="p">(</span><span class="dl">'</span><span class="s1">launch</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="nx">_runner</span> <span class="o">=</span> <span class="k">this</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nf">listen</span><span class="p">(</span><span class="mi">3000</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+        <span class="nx">_runner</span><span class="p">.</span><span class="nf">rejoin</span><span class="p">()</span>
+    <span class="p">})</span>
+<span class="p">})</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span><span class="dl">"</span><span class="s2">Motorway</span><span class="dl">"</span><span class="p">:</span> <span class="nx">mway</span><span class="p">,</span> <span class="dl">"</span><span class="s2">Application</span><span class="dl">"</span><span class="p">:</span> <span class="nx">app</span><span class="p">}</span>
+</code></pre></div></div>
+
+<p>You can even store your junctions in their own files, so that file can become:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">configure</span><span class="dl">'</span><span class="p">,</span>
+    <span class="na">runAfter</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">init</span><span class="dl">'</span><span class="p">],</span>
+    <span class="na">actions</span><span class="p">:</span> <span class="p">[</span>
+        <span class="kd">function</span><span class="p">(){</span>
+            <span class="k">this</span><span class="p">.</span><span class="nf">rejoin</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Making your code even neater.</p>
+
+<p>When it comes to running Motorway in an applications tests it works very much the same, except it drops the launch junction.</p>
+
+<p>In my tests (Mocha/Chai.expect) I have a test that makes sure my application inits okay which looks like this:</p>
+
+<div class="language-coffee highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">launch</span> <span class="o">=</span> <span class="nx">mway</span><span class="p">.</span><span class="na">junctions</span><span class="p">.</span><span class="na">findOne</span><span class="p">({</span><span class="na">name</span><span class="o">:</span> <span class="s">'launch'</span><span class="p">})</span>
+
+<span class="nx">mway</span><span class="p">.</span><span class="na">addJunction</span> <span class="s">'test'</span><span class="p">,</span> <span class="nx">launch</span><span class="p">.</span><span class="na">runAfter</span>
+
+<span class="nx">mway</span><span class="p">.</span><span class="na">addAction</span> <span class="s">'test'</span><span class="p">,</span> <span class="o">-&gt;</span>
+    <span class="nx">done</span><span class="p">()</span>
+    <span class="vi">@</span><span class="na">rejoin</span><span class="p">()</span>
+
+<span class="nx">mway</span><span class="p">.</span><span class="na">dropJunction</span> <span class="s">'launch'</span>
+<span class="nx">mway</span><span class="p">.</span><span class="na">start</span> <span class="s">'init'</span>
+</code></pre></div></div>
+
+<p>Which creates a new junction to finish the async test with the same run conditions as the original launch junction and it then drops the launch junction. Calling <code class="language-plaintext highlighter-rouge">mway.start('init')</code> now runs exactly the same code in the same order as normal but this time ends in a passed test not a listening server.</p>
+
+<p>Motorway now forms a large part of my latest project and I’m wedging it into older ones that could really do with the help.</p>
+
+<p>The source is <a href="https://github.com/Arcath/Motorway">over on github along</a> with the issue tracker etc…</p>
+
+<p>Hopefully Motorway will help you as much as it helped me.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

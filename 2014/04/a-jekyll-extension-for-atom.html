@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>A Jekyll extension for Atom</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">A Jekyll extension for Atom</h1>
+  <ul class="flex gap-2">
+    <li>02 April 2014</li>
+    
+      <li><a href="/tag/jekyll-atom">#jekyll-atom</a></li>
+    
+      <li><a href="/tag/atom">#atom</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>I recently got into the <a href="https://atom.io/">Atom</a> beta and have been using it for the past couple of weeks with no problems at all. One of the big features of <a href="https://atom.io/">Atom</a> is that it is hackable to the point that it comes by default with a make new package command.</p>
+
+<p>The only package I really use at the moment is <a href="https://atom.io/packages/Zen">Zen</a> which is super simple, if you look at the source all it does it attach a couple of extra classes and supply a stylesheet.</p>
+
+<p>Most of my work at the moment has been focused around <a href="http://jekyllrb.com/">Jekyll</a> so it was as good a place as any to start thinking about a package. I quickly wrote <a href="https://github.com/Arcath/jekyll-new-post">jekyll-new-post</a> and threw it out into the wild but pretty much as soon as I fixed issue #1 I started thinking of other things I could get <a href="http://atom.io/">Atom</a> to do for me and it quickly became apparent that jekyll-new-post was to focused a name.</p>
+
+<h2 id="jekyll-atom"><a href="https://atom.io/packages/jekyll">Jekyll-Atom</a></h2>
+
+<p>Instead of creating hundreds of Jekyll themed packages I decided to bundle everything into one, this way if you are using Jekyll you just install this 1 package and get all the functionality instead of picking and choosing.</p>
+
+<h3 id="what-can-it-do">What can it do?</h3>
+
+<p>First off it provides a bunch of snippets for HTML/GFM/MD e.g. <code class="language-plaintext highlighter-rouge">jv</code> expands to <code class="language-plaintext highlighter-rouge">{{ ... }}</code>. A full list of the snippets appears in the settings when you install the package.</p>
+
+<p>It then currently has 3 commands that can be triggered a multitude of ways. One to open the layout for the current document, so this post has <code class="language-plaintext highlighter-rouge">layout:post</code> in its front matter if I press <code class="language-plaintext highlighter-rouge">Cmd+Alt+L</code> Atom will open <code class="language-plaintext highlighter-rouge">_layouts/post.html</code> for me. Secondly it adds a command to the pallet to open <code class="language-plaintext highlighter-rouge">_config.yml</code> not the most ground breaking feature but its nice to have. Lastly it provides the same box as jekyll-new-post making that plugin redundant, anyone using it will need to disable it before using <a href="https://atom.io/packages/jekyll">Jekyll-Atom</a>.</p>
+
+<p>I’m using this new plugin here with no issue but if you find one you can open an <a href="https://github.com/Arcath/jekyll-atom/issues">issue on the github repo</a> and I will look at it.</p>
+
+<p>I have a couple of ideas for expanding it but I need to look more at how <a href="http://atom.io/">Atom</a> works behind the scenes and whether I can link into things like autocomplete.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

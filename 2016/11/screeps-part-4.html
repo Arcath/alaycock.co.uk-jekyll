@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Screeps Part 4 – We can rebuild, we have the AI</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Screeps Part 4 – We can rebuild, we have the AI</h1>
+  <ul class="flex gap-2">
+    <li>23 November 2016</li>
+    
+      <li><a href="/tag/screeps">#screeps</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>This is part 4 of my Screeps story, you can read the whole story <a href="/tag/screeps">here</a>.</p>
+
+<h2 id="picking-a-new-room">Picking a new Room</h2>
+
+<p>With the loss of my original room, I was now homeless.</p>
+
+<p>I actually struggled to find a room with 2 resources points that I could take. If your thinking of getting Screeps don’t worry they are constantly adding more rooms, they just limit the world size so I can’t take a room on the far side of the map with no other players to compete with.</p>
+
+<p>My new home W26N67 has 2 energy points and a hydrogen mine that I can get resources from. The surrounding area has a small number of players in (although I expect that number to go up).</p>
+
+<p>When you lose all your spawns in Screeps you don’t lose your GCL and progress to the next level. So I might be back at RC1 with no infrastructure but I am just under half way to GCL2. My empire should now hit GCL2 before my main room hits RC5. I am looking forward to adding a second room to my autonomous empire.</p>
+
+<p>I was climbing up the expansion ranks for November but that has stopped now. It will be a while before I’m expanding at the same rate as I was before. Reaching the top 50% in my first month feels pretty good to me</p>
+
+<h2 id="making-the-ai-smarter">Making the AI smarter</h2>
+
+<p>My AI does not do empty rooms.</p>
+
+<ul>
+  <li>Harvesters will only dump energy into a container within range 1.</li>
+  <li>Builders will only withdraw from containers.</li>
+  <li>Upgraders will only withdraw from containers.</li>
+  <li>Haulers are the only units that can refill spawn &amp; extensions.</li>
+  <li>My Creep designs are hard coded and way too expensive for an empty room.</li>
+</ul>
+
+<p>I quickly changed my creep designs to be cheaper letting my lone spawn create them. Harvesters, Builders, and Upgraders then needed updating to function with fewer structures.</p>
+
+<p>Builders and Upgraders now become harvesters if there are no containers to draw from. This allowed me begin building my containers and reach RC2 very quickly. Once the containers are built they go back to the original code and only pull from containers.</p>
+
+<p>Harvesters become haulers when there are no containers in range 1. This way they still follow the priority rules and any hauling updates will also apply to them. That being said once the containers are up it will only be if I loose this room that they should ever become haulers again.</p>
+
+<h2 id="creep-designer">Creep Designer</h2>
+
+<p>To keep my creep designs up to date with my available supply I wrote a new function to come up with a design for a creep that uses as much energy as it can.</p>
+
+<p>I define the basic 300 energy creep and an array of parts to extend with (if not supplied the base creep is used). The function then works out how much it can spend on a creep and keeps adding parts from extend until it can’t afford to. The great thing here is that as soon as a new extension is built all my creeps can get bigger (assuming the next part cost is only 50).</p>
+
+<h2 id="plans-for-the-future">Plans for the Future.</h2>
+
+<p>I had put army creeps to one side up to this point. I will not be losing this Spawn. If I have to take out other players spawns to do that I will do so.</p>
+
+<p>I’m not normally a player that uses violence when there is another option. Take the new Deus EX, I’m putting a lot of time into finding ways around enemies and subduing them without killing them. I hoped with the last room that I would be able to defend against some poking and ultimately the other player would see that it was a waste of energy attacking me.</p>
+
+<p>I have some ideas for defensive systems that should protect me from another defeat.</p>
+
+<h2 id="how-was-i-defeated">How was I defeated?</h2>
+
+<p>I’ve been watching the room history back to see where I went wrong and I am pretty sure this defeat was avoidable.</p>
+
+<ol>
+  <li>One of my reserved rooms was attacked and all the creeps in there killed.</li>
+  <li>Replacement creeps were spawned.</li>
+  <li>New creeps killed very quickly.</li>
+  <li>More creeps spawned.</li>
+  <li>After a few cycles, I could no longer provide enough energy to spawn the queue of creeps.</li>
+  <li>All my creeps dead and unable to respawn my tower ran out of energy.</li>
+  <li>he other player came in unopposed and destroyed my tower and spawn.</li>
+</ol>
+
+<p>I could have put up a pretty good defense with just my tower if I had stopped spawning creeps to march into a room that was not safe. I essentially handed my room over to the other player.</p>
+
+<h2 id="rc4-again">RC4 Again.</h2>
+
+<p>A testament to code efficiency is how quickly I have got back to RC4. I started playing on the 11th November, on the 15th I hit RC3, on the 17th I hit RC4. That’s 6 days to reach RC4. This time round I started the room on the morning of the 20th and reached RC4 in the morning on the 22nd. Technically under 48 hours.</p>
+
+<p>I dropped the sites for the RC4 buildings that I had before and watched my builders get to work.</p>
+
+<p>Now I am back to where I was before I can return to my original plans.</p>
+
+<p><img src="/assets/2016/11/screeps-part-4/back-to-rc4.png" alt="RC4 Again" /></p>
+
+<h2 id="get-screeps">Get Screeps</h2>
+
+<p>You can follow my progress on <a href="https://screeps.com/a/#!/profile/Arcath">my profile</a>. Once I reach RC4 I’m not sure how I am going to progress yet.</p>
+
+<p>You can read more about Screeps on their <a href="https://screeps.com/">site</a>. I purchased it through steam giving me the permanent 10 CPU and the desktop client.</p>
+
+<p>You can see my code as it was at the end of this post <a href="https://github.com/Arcath/screeps-code/commit/9e9732b57a94d5c7338072656850eac2d5f8e442">here</a>.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

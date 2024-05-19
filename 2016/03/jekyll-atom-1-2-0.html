@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Jekyll Atom 1.2.0</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Jekyll Atom 1.2.0</h1>
+  <ul class="flex gap-2">
+    <li>01 March 2016</li>
+    
+      <li><a href="/tag/jekyll-atom">#jekyll-atom</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>A new version of <a href="https://atom.io/packages/jekyll">Jekyll-Atom</a> has just been released!</p>
+
+<p>This version adds some new syntax grammars to Atom to highlight Liquid tags and the YAML front matter.</p>
+
+<p>The Grammars don’t define a massive amount they are essentially just pull in more than one grammar.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+    <span class="dl">'</span><span class="s1">begin</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">---</span><span class="dl">'</span>
+    <span class="dl">'</span><span class="s1">end</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">---</span><span class="dl">'</span>
+    <span class="dl">'</span><span class="s1">patterns</span><span class="dl">'</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="dl">'</span><span class="s1">include</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">source.yaml</span><span class="dl">'</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>This tells atom that inside <code class="language-plaintext highlighter-rouge">---</code> and <code class="language-plaintext highlighter-rouge">---</code> it should use the <code class="language-plaintext highlighter-rouge">source.yaml</code> grammar, then for XML and HTML we just include <code class="language-plaintext highlighter-rouge">text.xml</code> and <code class="language-plaintext highlighter-rouge">text.html.basic</code> respectively.</p>
+
+<p>Lastly we include <code class="language-plaintext highlighter-rouge">text.html.liquid</code> from the <a href="https://atom.io/packages/language-liquid">language-liquid</a> package. Jekyll-Atom will now warn you if this package is not installed.</p>
+
+<p>JSON does not work anywhere near as well as HTML &amp; XML due it being rather strict and marking most of the liquid tags as illegal characters (which is technically correct). I will revisit it in the future but for now we have partial liquid highlighting, front matter highlighting and that is it.</p>
+
+<p>Jekyll-Atom now hits everything a package can do bar providing a service, making it the one stop shop for Jekyll! It has grown so much from my original package and has become an integral part of my workflow, this blog would not be what it is today without Jekyll-Atom.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

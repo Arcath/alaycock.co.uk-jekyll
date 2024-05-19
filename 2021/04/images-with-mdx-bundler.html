@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Images with MDX-Bundler</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Images with MDX-Bundler</h1>
+  <ul class="flex gap-2">
+    <li>29 April 2021</li>
+    
+      <li><a href="/tag/next-js">#next-js</a></li>
+    
+      <li><a href="/tag/mdx">#mdx</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>mdx-bundler 3.4.0 has just been released! This new version improves on an
+awesome feature of 3.3.0 which allows you to set the current working directory
+of the build. With this you can require modules directly and co-locate your
+images within the same directory as the post!</p>
+
+<p>This cuts down on your overheads and means that <code class="language-plaintext highlighter-rouge">mdx-bundler</code> works alot more
+like the way mdx does in Gatsby.</p>
+
+<h2 id="components">Components</h2>
+
+<p>From my <a href="/2021/03/mdx-bundler">last post</a> I had a <code class="language-plaintext highlighter-rouge">getComponents</code> function that
+ran through the given directory to find any <code class="language-plaintext highlighter-rouge">.ts</code> or <code class="language-plaintext highlighter-rouge">.tsx</code> files and read them
+into an object that mdx-bundler would understand. This function is now
+redundant!</p>
+
+<p>Instead of giving <code class="language-plaintext highlighter-rouge">getComponents</code> the posts directory I can now set <code class="language-plaintext highlighter-rouge">cwd</code> in the
+options for <code class="language-plaintext highlighter-rouge">bundleMDX</code> to the posts directory and thats it! Relative imports
+are resolved by esbuild like they would in any other file.</p>
+
+<p>You can see from
+<a href="https://github.com/Arcath/arcath.net-next/commit/b11d432d304c3e1a483aa7d58681c79ce2cf2761">this commit</a>
+how much I was able to remove from this site now that <code class="language-plaintext highlighter-rouge">cwd</code> exists.</p>
+
+<h2 id="images">Images</h2>
+
+<p>Images can be linked to in the same way and with a couple of extra bits of
+config they can be made to work extremely well!</p>
+
+<p>Before we can get esbuild to handle the images it needs to know that there are
+files to import. Enter
+<a href="https://www.npmjs.com/package/remark-mdx-images">remark-mdx-images</a> which takes
+the images in your MDX and turns them into imports, like you would in your .tsx
+files.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nx">image</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">./image.jpg</span><span class="dl">'</span>
+<span class="p">;</span><span class="o">&lt;</span><span class="nx">img</span> <span class="nx">src</span><span class="o">=</span><span class="p">{</span><span class="nx">image</span><span class="p">}</span> <span class="sr">/</span><span class="err">&gt;
+</span></code></pre></div></div>
+
+<p>So now esbuild knows about the images we need to do something with them, right
+now its just going to complain that it doesn’t have a loader for the <code class="language-plaintext highlighter-rouge">.jpg</code> file
+type.</p>
+
+<p>To start with the <code class="language-plaintext highlighter-rouge">dataurl</code> loader will do the job, it inlines all the images as
+<code class="language-plaintext highlighter-rouge">dataurl:image/jpg...</code>. Not the most effecient solution but it does work out of
+the box and I used it as a proof of concept.</p>
+
+<pre><code class="language-js#9-12">const {code} = await bundleMDX(source, {
+  cwd: '/posts/directory/on/disk',
+  xdmOptions: options =&gt; {
+    options.remarkPlugins = [...(options.remarkPlugins ?? []), remarkMdxImages]
+
+    return options
+  },
+  esbuildOptions: options =&gt; {
+    options.loader = {
+      ...options.loader,
+      '.jpg': 'dataurl'
+    }
+
+    return options
+  }
+})
+</code></pre>
+
+<p>This <em>just</em> works, but as I said does inline all the images which will result in
+some pretty big bundles. The real aim was always the <code class="language-plaintext highlighter-rouge">file</code> loader which copies
+files from the source to the destination.</p>
+
+<p>As the <code class="language-plaintext highlighter-rouge">file</code> loader is copying files around it needs to know more details about
+the resulting environment. At a minimum, where should the files be outputted to
+and what url is needed to request them.</p>
+
+<pre><code class="language-js#9-15">const {code} = await bundleMDX(source, {
+  cwd: '/posts/directory/on/disk',
+  xdmOptions: options =&gt; {
+    options.remarkPlugins = [...(options.remarkPlugins ?? []), remarkMdxImages]
+
+    return options
+  },
+  esbuildOptions: options =&gt; {
+    options.outdir = '/public/directory/on/disk/img'
+    options.loader = {
+      ...options.loader,
+      '.jpg': 'file'
+    }
+    options.publicPath = '/img/'
+    options.write = true
+
+    return options
+  }
+})
+</code></pre>
+
+<p><code class="language-plaintext highlighter-rouge">outdir</code> is where on disk to write to, <code class="language-plaintext highlighter-rouge">publicPath</code> is the url to that folder
+and most importantly <code class="language-plaintext highlighter-rouge">write</code> tells <code class="language-plaintext highlighter-rouge">esbuild</code> that it should output the files
+into the <code class="language-plaintext highlighter-rouge">outdir</code>.</p>
+
+<p>The directories are specific to your site but here I supply a different folder
+for each post/page etc… to give an example:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Content</th>
+      <th style="text-align: left">Post Directory</th>
+      <th style="text-align: left"><code class="language-plaintext highlighter-rouge">outdir</code></th>
+      <th style="text-align: left"><code class="language-plaintext highlighter-rouge">publicPath</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><a href="/2021/04/images-with-mdx-bundler">This Post</a></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">&lt;root&gt;/_content/posts/2021-04-29-images-with-mdx-bundler</code></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">&lt;root&gt;/public/img/posts/2021/04/images-with-mdx-bundler</code></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">/img/posts/2021/04/images-with-mdx-bundler</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="/about">About Page</a></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">&lt;root&gt;/_content/pages/</code></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">&lt;root&gt;/public/img/pages/about</code></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">/img/pages/about</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>This prevents images from later builds overwriting earlier ones. You have to
+remember that each call to <code class="language-plaintext highlighter-rouge">bundleMDX</code> is isolated so esbuild can’t tell if the
+image it wants to overwrite is from an another build or from the last time your
+site was built.</p>
+
+<p>This has been a big improvement to this site, getting very close now to the
+experiance you get from
+<a href="https://www.gatsbyjs.com/plugins/gatsby-plugin-mdx/">gatsby-plugin-mdx</a> but in
+an entirely platform agnostic way!</p>
+
+<p>MDX-Bundler is going from strength to strength, I’m really happy with the new
+features and it’s only getting better!</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

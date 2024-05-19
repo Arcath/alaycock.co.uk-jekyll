@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Using HTMR to bring life to links in Gatsby</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Using HTMR to bring life to links in Gatsby</h1>
+  <ul class="flex gap-2">
+    <li>15 May 2019</li>
+    
+      <li><a href="/tag/gatsby">#gatsby</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>One of the amazing things about Gatsby is that your site is a full blown React app. Because of this it’s always bugged me that whilst the navigation within <em>app</em> is extremely fast anything I link to from my markdown triggers a full request for the page.</p>
+
+<p>This happens because the links in markdown are just an <code class="language-plaintext highlighter-rouge">a</code> tag placed on the page from <code class="language-plaintext highlighter-rouge">dangerouslySetInnerHTML</code>. This means no event listeners or anything, just a plain old fashioned link. The solution is to parse the HTML string and swap ot the links for the proper React components.</p>
+
+<p>There are a few HTML to React converters but I found <a href="https://github.com/pveyes/htmr">HTMR</a> easy to use for my needs. I’m only looking to swap out <code class="language-plaintext highlighter-rouge">a</code> tags for a <code class="language-plaintext highlighter-rouge">Link</code> component, not binding events or anything fancy like that.</p>
+
+<p>I already have a <code class="language-plaintext highlighter-rouge">Content</code> component that takes a <code class="language-plaintext highlighter-rouge">html</code> prop. I created it for just such a case as this where I want to change the way content is rendered across the whole site.</p>
+
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nx">React</span><span class="p">,</span> <span class="p">{</span><span class="nx">ReactHTMLElement</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react</span><span class="dl">'</span>
+<span class="k">import</span> <span class="nx">convert</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">htmr</span><span class="dl">'</span>
+<span class="k">import</span> <span class="p">{</span><span class="nx">HtmrOptions</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">htmr/lib/types</span><span class="dl">'</span>
+<span class="k">import</span> <span class="p">{</span><span class="nx">OutboundLink</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">gatsby-plugin-google-gtag</span><span class="dl">'</span>
+<span class="k">import</span> <span class="p">{</span><span class="nx">Link</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">gatsby</span><span class="dl">'</span>
+
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">Content</span><span class="p">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">FunctionComponent</span><span class="o">&lt;</span><span class="p">{</span><span class="na">html</span><span class="p">:</span> <span class="kr">string</span><span class="p">}</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">({</span><span class="nx">html</span><span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="na">transform</span><span class="p">:</span> <span class="nx">HtmrOptions</span><span class="p">[</span><span class="dl">"</span><span class="s2">transform</span><span class="dl">"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">a</span><span class="p">:</span> <span class="p">(</span><span class="na">node</span><span class="p">:</span> <span class="nb">Partial</span><span class="o">&lt;</span><span class="nx">ReactHTMLElement</span><span class="o">&lt;</span><span class="nx">HTMLAnchorElement</span><span class="o">&gt;</span><span class="p">[</span><span class="dl">"</span><span class="s2">props</span><span class="dl">"</span><span class="p">]</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="kd">const</span> <span class="p">{</span><span class="nx">href</span><span class="p">}</span> <span class="o">=</span> <span class="nx">node</span>
+
+      <span class="k">if</span><span class="p">(</span><span class="nx">href</span><span class="o">!</span><span class="p">.</span><span class="nf">substr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">http</span><span class="dl">'</span><span class="p">){</span>
+        <span class="k">return</span> <span class="o">&lt;</span><span class="nx">OutboundLink</span> <span class="nx">href</span><span class="o">=</span><span class="p">{</span><span class="nx">href</span><span class="o">!</span><span class="p">}</span><span class="o">&gt;</span><span class="p">{</span><span class="nx">node</span><span class="p">.</span><span class="nx">children</span><span class="p">}</span><span class="o">&lt;</span><span class="sr">/OutboundLink</span><span class="err">&gt;
+</span>      <span class="p">}</span>
+
+      <span class="k">return</span> <span class="o">&lt;</span><span class="nx">Link</span> <span class="nx">to</span><span class="o">=</span><span class="p">{</span><span class="nx">href</span><span class="o">!</span><span class="p">}</span><span class="o">&gt;</span><span class="p">{</span><span class="nx">node</span><span class="p">.</span><span class="nx">children</span><span class="p">}</span><span class="o">&lt;</span><span class="sr">/Link</span><span class="err">&gt;
+</span>    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span><span class="p">{</span><span class="nf">convert</span><span class="p">(</span><span class="nx">html</span><span class="p">,</span> <span class="p">{</span> <span class="nx">transform</span> <span class="p">})}</span><span class="o">&lt;</span><span class="sr">/div</span><span class="err">&gt;
+</span><span class="p">}</span>
+</code></pre></div></div>
+
+<p>So what is this doing?</p>
+
+<p><code class="language-plaintext highlighter-rouge">convert</code> comes from HTMR and performs the actual conversion. I’ve put it in a <code class="language-plaintext highlighter-rouge">div</code> tag here to deal with the edge case of <code class="language-plaintext highlighter-rouge">html</code> being a string with no tags in it. To bring life to links I used the optional <code class="language-plaintext highlighter-rouge">transform</code> option that you can pass to the <code class="language-plaintext highlighter-rouge">convert</code> function. From here you can map tags to other tags e.g. <code class="language-plaintext highlighter-rouge">b: 'strong'</code> to use <code class="language-plaintext highlighter-rouge">strong</code> instead of <code class="language-plaintext highlighter-rouge">b</code> for all <code class="language-plaintext highlighter-rouge">b</code> tags. Or you can provide a replacement component, <code class="language-plaintext highlighter-rouge">button: Button</code> to use a styled button instead. The third usage method is to provide a function.</p>
+
+<p>The function is passed a single argument which is the <code class="language-plaintext highlighter-rouge">props</code> that HTMR would use for the orginal tag.</p>
+
+<p>For Example:</p>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// HTML
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"/something"</span><span class="nt">&gt;</span>a link<span class="nt">&lt;/a&gt;</span>
+// Props
+{href: '/something', children: 'a link'}
+</code></pre></div></div>
+<p>In the code above I do a check of the <code class="language-plaintext highlighter-rouge">href</code> prop to see if this is an internal link, or an external link. If its an external link it is replaced with an <code class="language-plaintext highlighter-rouge">OutboundLink</code> which makes sure Google Analytics handles the link correctly. Otherwise it must be an internal link which gets replaced with a <code class="language-plaintext highlighter-rouge">Link</code>.</p>
+
+<p>The outcome of all this is much faster internal links.</p>
+
+<p>Take this link to <a href="/about">about me</a> it is an internal link that is now a proper <code class="language-plaintext highlighter-rouge">Link</code>. Give it a try and notice how fast it is. This link to my <a href="https://arcath.net/uses">uses page</a> on the other hand, thats a full blown link and works like internal links did before HTMR.</p>
+
+<p>There is the plugin <a href="https://www.gatsbyjs.org/packages/gatsby-plugin-catch-links/">gatsby-plugin-catch-links</a> that provides a similar outcome but does it in a very heavy handed way. It binds itself to all links in the browser and on a per-link basis decides if its an internal link and how to navigate to its target. My method with HTMR <em>fixes</em> the links during site build and requires no extra even bindings on the client side. Plus it only applies to the markdown and not other links on the site that are already React components.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

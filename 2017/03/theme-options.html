@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Theme Options</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Theme Options</h1>
+  <ul class="flex gap-2">
+    <li>29 March 2017</li>
+    
+      <li><a href="/tag/wordpress">#wordpress</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>My latest composer release is a small library to help with theme options in WordPress. It provides a simple interface for defining theme options and retrieving them later.</p>
+
+<p>I made this library quite a while ago and manually copied it from theme to theme as I built them. Newer themes have newer versions and I decided it was time to move it onto composer.</p>
+
+<p>I originally built it to replace the function <code class="language-plaintext highlighter-rouge">themeslug_theme_option_or_default('option_name', 'default_value');</code> which required me to remember the default value everywhere I used the option. Theme options solves this by having you declare your options in the <code class="language-plaintext highlighter-rouge">init</code> action. Now when you call <code class="language-plaintext highlighter-rouge">$themeOptions-&gt;themeOption('option_name');</code> it handles returning the default value if needed.</p>
+
+<h2 id="getting-it">Getting it.</h2>
+
+<p>You can get theme options from composer using</p>
+
+<blockquote>
+  <p>composer require arcath/theme-options</p>
+</blockquote>
+
+<p>or <a href="https://github.com/Arcath/theme-options">download it from GitHub</a>.</p>
+
+<p>Once you have it require it (or use composers autoload) at the top of your <code class="language-plaintext highlighter-rouge">functions.php</code>.</p>
+
+<h2 id="using-it">Using It.</h2>
+
+<p>Somewhere near the top of your <code class="language-plaintext highlighter-rouge">functions.php</code> you need to create a new instance of <code class="language-plaintext highlighter-rouge">Arcath\ThemeOptions</code> and pass your themes slug. This instance then needs to be globally referenced whenever you want to use it.</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="nv">$themeOptions</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Arcath\ThemeOptions</span><span class="p">(</span><span class="s1">'theme_slug'</span><span class="p">);</span>
+
+<span class="nf">add_action</span><span class="p">(</span><span class="s1">'init'</span><span class="p">,</span> <span class="k">function</span><span class="p">(){</span>
+  <span class="k">global</span> <span class="nv">$themeOptions</span><span class="p">;</span>
+
+  <span class="c1">// Add an option using a custom control class</span>
+  <span class="nv">$themeOptions</span><span class="o">-&gt;</span><span class="nf">addThemeOptionCustomControl</span><span class="p">(</span><span class="s1">'logo_light'</span><span class="p">,</span>
+    <span class="k">array</span><span class="p">(</span>
+      <span class="s1">'type'</span> <span class="o">=&gt;</span> <span class="s1">'option'</span><span class="p">,</span>
+      <span class="s1">'default'</span> <span class="o">=&gt;</span> <span class="mi">0</span>
+    <span class="p">),</span>
+    <span class="k">array</span><span class="p">(</span>
+      <span class="s1">'section'</span> <span class="o">=&gt;</span> <span class="s1">'home'</span><span class="p">,</span>
+      <span class="s1">'label'</span> <span class="o">=&gt;</span> <span class="nf">__</span><span class="p">(</span><span class="s1">'Light Logo'</span><span class="p">,</span> <span class="s1">'theme_slug'</span><span class="p">),</span>
+      <span class="s1">'description'</span> <span class="o">=&gt;</span> <span class="nf">__</span><span class="p">(</span><span class="s1">'Light Logo used on darker backgrounds'</span><span class="p">,</span> <span class="s1">'theme_slug'</span><span class="p">),</span>
+    <span class="p">),</span>
+    <span class="s1">'WP_Customize_Image_Control'</span>
+  <span class="p">);</span>
+
+  <span class="c1">// Add an option with the standard control class</span>
+  <span class="nv">$themeOptions</span><span class="o">-&gt;</span><span class="nf">addThemeOption</span><span class="p">(</span><span class="s1">'phone_number'</span><span class="p">,</span>
+    <span class="k">array</span><span class="p">(</span>
+      <span class="s1">'capability'</span> <span class="o">=&gt;</span> <span class="s1">'edit_theme_options'</span><span class="p">,</span>
+      <span class="s1">'type'</span>       <span class="o">=&gt;</span> <span class="s1">'option'</span><span class="p">,</span>
+      <span class="s1">'default'</span>    <span class="o">=&gt;</span> <span class="s1">'0123456789'</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="k">array</span><span class="p">(</span>
+      <span class="s1">'label'</span> <span class="o">=&gt;</span> <span class="s1">'Phone Number'</span><span class="p">,</span>
+      <span class="s1">'section'</span> <span class="o">=&gt;</span> <span class="s1">'home'</span><span class="p">,</span>
+      <span class="s1">'description'</span> <span class="o">=&gt;</span> <span class="nf">__</span><span class="p">(</span><span class="s1">'Your Phone Number'</span><span class="p">,</span> <span class="s1">'theme_slug'</span><span class="p">)</span>
+    <span class="p">)</span>
+  <span class="p">);</span>
+<span class="p">});</span>
+<span class="nf">add_action</span><span class="p">(</span><span class="s1">'customize_register'</span><span class="p">,</span> <span class="k">function</span><span class="p">(</span><span class="nv">$wp_customize</span><span class="p">){</span>
+  <span class="c1">// Create the required sections</span>
+  <span class="nv">$wp_customize</span><span class="o">-&gt;</span><span class="nf">add_section</span><span class="p">(</span>
+    <span class="s1">'home'</span><span class="p">,</span>
+    <span class="k">array</span><span class="p">(</span>
+      <span class="s1">'title'</span> <span class="o">=&gt;</span> <span class="s1">'Home'</span><span class="p">,</span>
+      <span class="s1">'description'</span> <span class="o">=&gt;</span> <span class="nf">__</span><span class="p">(</span><span class="s1">'Home Page Template options.'</span><span class="p">,</span> <span class="s1">'theme_slug'</span><span class="p">),</span>
+      <span class="s1">'capability'</span> <span class="o">=&gt;</span> <span class="s1">'edit_theme_options'</span><span class="p">,</span>
+    <span class="p">)</span>
+  <span class="p">);</span>
+<span class="p">});</span>
+<span class="cp">?&gt;</span>
+</code></pre></div></div>
+
+<p>To define an option you use either <code class="language-plaintext highlighter-rouge">addThemeOption</code> or <code class="language-plaintext highlighter-rouge">addThemeOptionCustomControl</code>. Both take the same 3 arguments with <code class="language-plaintext highlighter-rouge">addThemeOptionCustomControl</code> taking a 4th.</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Option Name</code>, The name of your option, used to recall it later.</li>
+  <li><code class="language-plaintext highlighter-rouge">Setting Options</code>, Passed to <code class="language-plaintext highlighter-rouge">$wp_customize-&gt;addSetting</code>. You can omit the setting name. The default supplied here will be used as the default when you ask for the option later.</li>
+  <li><code class="language-plaintext highlighter-rouge">Control Options</code>, Passed to <code class="language-plaintext highlighter-rouge">$wp_customize-&gt;addControl</code>. You can omit the setting name.</li>
+  <li><code class="language-plaintext highlighter-rouge">Control Class Name</code>, A string containing the name of the class you want to use for your control. Only used by <code class="language-plaintext highlighter-rouge">addThemeOptionCustomControl</code>.</li>
+</ul>
+
+<p>To use your theme options in your theme simply call themeOption and pass the name of your setting.</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="k">global</span> <span class="nv">$themeOptions</span><span class="p">;</span>
+
+<span class="k">echo</span><span class="p">(</span><span class="nv">$themeOptions</span><span class="o">-&gt;</span><span class="nf">themeOption</span><span class="p">(</span><span class="s1">'phone_number'</span><span class="p">));</span>
+<span class="cp">?&gt;</span>
+</code></pre></div></div>
+
+<p>Theme options is a pretty simple library, I will update it more in the future as I need to. Feel free to open issues on GitHub if you have any suggestions or issues.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

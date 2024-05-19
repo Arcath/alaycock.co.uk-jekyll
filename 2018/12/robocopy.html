@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Robocopy, the best copying tool you already have.</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Robocopy, the best copying tool you already have.</h1>
+  <ul class="flex gap-2">
+    <li>08 December 2018</li>
+    
+      <li><a href="/tag/windows">#windows</a></li>
+    
+      <li><a href="/tag/tools">#tools</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>Robocopy is an amazing tool that is built into Windows. If your running Windows 10 you already have it! Just fire up a command prompt and your away.</p>
+
+<p>I’ve known about and used Robocopy for quite a few years now. In my line of work I often find I need to copy multiple terrabytes of data from one server to another and the standard Windows file copy is just not setup for that.</p>
+
+<p>The standard file copy does some helpful stuff that doesn’t scale well. Counting the remaining files, estimating the time remaining, and calculating the total transfer speed all take time and effort that could be spent copying.</p>
+
+<p>Robocopy or <em>Robust File Copy</em> to use its full name is a command line utility that is faster and has quite a few more options than the standard file copier.</p>
+
+<h2 id="some-numbers">Some Numbers</h2>
+
+<p>Lets put some numbers to the performance of robocopy.</p>
+
+<p>First off the standard copy dialog.</p>
+
+<p><img src="/assets/2018/12/robocopy/standard-copy.png" alt="Standard File Copy dialog" /></p>
+
+<p>To keep things fair I am copying the same 140MB folder from one place on my SSD to another.</p>
+
+<p>Standard File Copy (SFC so I don’t have to keep typing it) managed to copy the folder in 9 seconds which isnt bad.</p>
+
+<p>Robocopy on the other hand managed the same copy in 2 seconds.</p>
+
+<p><img src="/assets/2018/12/robocopy/robocopy.png" alt="Robocopy" /></p>
+
+<p>Thats a pretty good reduction although you do lose more than 7 seconds to opeing command prompt and typing the command out but thats not the point, if you need robocopy over the standard file copy chances are your copying something pretty big.</p>
+
+<h2 id="more-features">More features</h2>
+
+<p>Robocopy can do more than just copy files/folders from one place to another. The quickest way to use robocopy is with <code class="language-plaintext highlighter-rouge">/MIR</code> e.g.</p>
+
+<pre><code class="language-dos">robocopy C:\Data D:\Backup /MIR
+</code></pre>
+
+<p><code class="language-plaintext highlighter-rouge">/MIR</code> or <em>Mirror</em> is a shorthand for <code class="language-plaintext highlighter-rouge">/E /PURGE</code> which means copy all subdirectories include empty ones (<code class="language-plaintext highlighter-rouge">/E</code>) and delete files/folders in the destination that are not present in the source (<code class="language-plaintext highlighter-rouge">/PURGE</code>). Couple this with the fact that robocopy will skip exisiting unchanged files and youve got a great way to migrate data. I frequently run a robocopy that takes hours one week then come back a week later to finish the job and have a really quick robocopy only unpdate the destination with the weeks changes.</p>
+
+<p>There are a multitude of options that can change the way robocopy works. I wont go into them all here <code class="language-plaintext highlighter-rouge">robocopy /?</code> will list them all for you. The options I use a lot is <code class="language-plaintext highlighter-rouge">/XD</code> which can exclude directories from your copy and <code class="language-plaintext highlighter-rouge">/XF</code> which does the same for files. These options are incredibly useful when copying a user profile.</p>
+
+<pre><code class="language-dos">robocopy C:\Users\Adam D:\Backups\Adam /MIR /XD AppData /XF ntuser.dat
+</code></pre>
+
+<p>This excludes <code class="language-plaintext highlighter-rouge">AppData</code> that is normally pretty big and contains a lot of content that isnt really something you can copy, <code class="language-plaintext highlighter-rouge">ntuser.dat</code> is the users registry which if your logged on as the user you are copying will be in use and un readable.</p>
+
+<p><code class="language-plaintext highlighter-rouge">/W:0 /R:0</code> also features alot when I do big copies as it reduces the wait time to 0 and the retries to 0 which stops robocopy wasting its time on corrupt or in use files. As menitoned earlier I can simply re run the same copy later and it will only try the files it had problems with again.</p>
+
+<p>The robocopy help file an be read online over on <a href="https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/robocopy">Microsoft Docs</a> which goes into great detail of the other options robocopy has.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

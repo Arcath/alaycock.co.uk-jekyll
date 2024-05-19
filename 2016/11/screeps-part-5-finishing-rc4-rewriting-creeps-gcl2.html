@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Screeps Part 5 – Finishing RC4 and Rewriting the Creeps for GCL2</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Screeps Part 5 – Finishing RC4 and Rewriting the Creeps for GCL2</h1>
+  <ul class="flex gap-2">
+    <li>27 November 2016</li>
+    
+      <li><a href="/tag/screeps">#screeps</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>This is part 5 of my Screeps story, you can read the whole story <a href="/tag/screeps">here</a>.</p>
+
+<h2 id="rewriting-the-creeps">Rewriting the Creeps.</h2>
+
+<p>I am not happy with my creeps anymore.</p>
+
+<p>With any code I maintain, there comes a point where I stop sticking bits to the side and overhaul the whole block.I manually define how many of each creep type I need and they only perform the job they are told to and won’t change during their life.</p>
+
+<p>I manually define how many of each creep type I need and they only perform the job they are told to and won’t change during their life. This isn’t multi-room/spawn friendly and it means I could have a full load of upgraders but no harvesters and no energy to spawn any.</p>
+
+<p>It was also hard coded that my spawn was called Spawn1. This was going to be an issue once my GCL increases and I have 2 spawns.</p>
+
+<p>My new creep class works something like this:</p>
+
+<ul>
+  <li>Is my energy at 100%?
+    <ul>
+      <li>Yes: Start working.</li>
+    </ul>
+  </li>
+  <li>Is my energy at 0%?
+    <ul>
+      <li>Yes: Stop working.</li>
+    </ul>
+  </li>
+  <li>Does the number of creeps with the job harvester equal the number of sources?
+    <ul>
+      <li>Yes: Are there any construction sites?
+        <ul>
+          <li>Yes: Become a builder</li>
+          <li>No: Become an Upgrader</li>
+        </ul>
+      </li>
+      <li>No: Become a harvester</li>
+    </ul>
+  </li>
+  <li>Am I working?
+    <ul>
+      <li>Yes:
+        <ul>
+          <li>harvesters drop off into nearest container.</li>
+          <li>builders build.</li>
+          <li>upgraders upgrade.</li>
+        </ul>
+      </li>
+      <li>No:
+        <ul>
+          <li>harvesters harvest.</li>
+          <li>builders &amp; upgraders collect energy from a container or if no containers exist begin harvesting.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p>This code has one major advantage. Creeps can change job. When a harvester dies another creep will now immediately fill the gap. No waiting for another to spawn. I now deplete my energy with 100 ticks left on the refresh counter.</p>
+
+<p>This also has a new spawning code which makes sure the room for the supplied spawn has at least number of sources + 2 creeps at any one time.</p>
+
+<h2 id="the-near-miss">The Near Miss.</h2>
+
+<p>The new creeps caused a situation where nothing happened all night.</p>
+
+<p>Using my creep builder my creeps always cost as much as they can which means if there isn’t enough energy it waits until all the extensions are full before spawning. This ensures the most productive creeps are produced for whichever level the room is. This means that if all the extensions aren’t full A new creep can’t be spawned. So my creeps were taking from the containers at a lower energy level than the haulers which meant my haulers never got a chance to refill the extensions.</p>
+
+<p>Two improvements need to be made to fix this bug.</p>
+
+<ul>
+  <li>If the number of living creeps is below the number of sources use the creep builders <code class="language-plaintext highlighter-rouge">canAffordOnly</code> mode which limits the cost of a creep to available energy not the maximum.</li>
+  <li>Only collect from a container if its current energy level is greater than the carry capacity of the haulers + the capacity of the current creep.</li>
+</ul>
+
+<p>After adding these improvements the room became pretty self-sufficient again.</p>
+
+<h2 id="recycling">Recycling</h2>
+
+<p>Thanks to the Slack users for some clarification on this.</p>
+
+<p>When my creeps die its 1300 energy that just gets thrown away. Spawns have a way of dealing with this called recycling.</p>
+
+<p>When you recycle a creep it drops some energy used to create it to the floor. A handy trick (thanks mmmd) is to have your creeps recycle on top of a container, this way the energy is instantly stored.</p>
+
+<p>So for my new creeps when they reach a TTL (Time to Live) of 350 ticks I get them to move to the container next to spawn. Once there Spawn recycles them, dropping the energy straight into the container.</p>
+
+<h2 id="under-attack">Under Attack</h2>
+
+<p>My neighbour to the left has begun attack me. They started sending the odd unit to test my defenses giving me flashbacks to the loss of my old room. Fortunately, I am prepared. Towers now jump the energy queue getting first dibs from the haulers if a hostile creep is in the room.</p>
+
+<p>After a rather large incursion, I decided to contain the situation by going all Trump on them.</p>
+
+<p><img src="/assets/2016/11/screeps-part-5-finishing-rc4-rewriting-creeps-gcl2/wall.png" alt="The wall" /></p>
+
+<p>I’ve not seen an attack in a while after building the wall. I believe they have stopped trying as they can’t beat my turrets.</p>
+
+<h2 id="a-new-room">A new Room.</h2>
+
+<p>I am now GCL2. This means I can have a second room with its own spawn and RC level.</p>
+
+<p>My new creeps were already pretty much ready for multiple spawns, haulers needed a couple of changes making in the <code class="language-plaintext highlighter-rouge">ai.numbers</code> function so that the hauler count only included haulers in the same room as the spawn.</p>
+
+<p>To get the room up and running faster I added an inter-room hauler taking energy to the new room from the old one.</p>
+
+<p>My new creeps don’t seem to be that great in low-level rooms. I needed to add an exception to the builder job that meant they become upgraders if there are less than 500 ticks on the room controller downgrade.</p>
+
+<p>Despite the above condition it still dropped back to level 1 on Sunday morning. The container by the harvester died and it turns out my code for making them harvest if there are no containers was broken. Essentially if a harvester was alive no creep can harvest from that point. I ended up having to change the code so that it did the same point limiting but per creep job. So a single harvester, builder &amp; upgrader per point.</p>
+
+<p>This all happened because my creeps didn’t ever become healers. A small oversight on my part that has caused a pretty big setback. Adding healing code was a pretty simple thing, in the new creep class its just a builder that runs repair instead of build.</p>
+
+<h2 id="what-is-next">What is Next?</h2>
+
+<p>My code will most likely stay the same for now. I need my new room to level up and I can’t start working on mineral extraction or market trading until I reach RC6 in my main room.</p>
+
+<p>At RC5 I got another tower and links. Links are a nice structure that lets you send energy within a room from one to the other. I actually plan to use them more with another expansion idea I have.</p>
+
+<p><img src="/assets/2016/11/screeps-part-5-finishing-rc4-rewriting-creeps-gcl2/rc5.png" alt="My room at RCL5" /></p>
+
+<h2 id="get-screeps">Get Screeps</h2>
+
+<p>You can follow my progress on <a href="https://screeps.com/a/#!/profile/Arcath">my profile</a>. Once I reach RC4 I’m not sure how I am going to progress yet.</p>
+
+<p>You can read more about Screeps on their <a href="https://screeps.com/">site</a>. I purchased it through steam giving me the permanent 10 CPU and the desktop client.</p>
+
+<p>You can see my code as it was at the end of this post <a href="https://github.com/Arcath/screeps-code/tree/daf0c012a7820b7293c229afea01d8456d4d3b6a">here</a>.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

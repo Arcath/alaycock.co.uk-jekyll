@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Improving speed in Jekyll-Atom</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Improving speed in Jekyll-Atom</h1>
+  <ul class="flex gap-2">
+    <li>22 January 2016</li>
+    
+      <li><a href="/tag/jekyll-atom">#jekyll-atom</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p><a href="https://github.com/Arcath/Jekyll-Atom">Jekyll-Atom</a> is pretty slow at building sites.</p>
+
+<p>There is a noticeable delay between hitting <code class="language-plaintext highlighter-rouge">ctrl-S</code> and the site being updated which really slows development.</p>
+
+<p>The fatal flaw is the <code class="language-plaintext highlighter-rouge">jekyll build</code> is building the whole site every time which as your site grows results in longer and longer builds to the point that the preview server becomes pretty useless.</p>
+
+<p>The latest <a href="http://jekyllrb.com/">Jekyll</a> version adds an experimental feature for doing incremental builds which is an extreme improvement. Usual disclaimer about experimental features not being 100% reliable which means although the speed is greatly increased there maybe some cases where you don’t get the results you are expecting.</p>
+
+<p>I have enabled it on this blog by adding <code class="language-plaintext highlighter-rouge">incremental: true</code> to my <code class="language-plaintext highlighter-rouge">_config.yml</code> and only really found one issue with it. Adding a new post doesn’t cause <code class="language-plaintext highlighter-rouge">blog.html</code> to be updated so although the post exists and has been generated there is no link to it. This can be worked around by saving <code class="language-plaintext highlighter-rouge">blog.html</code> again.</p>
+
+<p>I wont be making this a default option in Jekyll-Atom for now at least, if you want to use it just add to your <code class="language-plaintext highlighter-rouge">_config.yml</code>.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

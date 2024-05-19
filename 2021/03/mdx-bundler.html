@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>MDX Bundler with Next.JS</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">MDX Bundler with Next.JS</h1>
+  <ul class="flex gap-2">
+    <li>12 March 2021</li>
+    
+      <li><a href="/tag/mdx">#mdx</a></li>
+    
+      <li><a href="/tag/next-js">#next-js</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>I’ve been using <a href="/2020/03/moving-to-mdx">mdx</a> on this site for a little while now and with my move to <a href="/2021/02/next.js">Next.JS</a> I went with <a href="https://github.com/hashicorp/next-mdx-remote">next-mdx-remote</a> to compile it. I felt that next-mdx-remote just wasn’t quite what I was after. It forced me to do some <em>odd</em> things to get components into MDX and, all in all, felt like MDX was a hindrance more than a help. However it was the only option I could see and it did work to a point so I stuck with it.</p>
+
+<p>Then came <a href="https://github.com/kentcdodds/mdx-bundler">mdx-bundler</a> which on paper almost sounded too good to be true. It supports import statements and bundling of any dependencies. I jumped to it and swapped out next-mdx-remote for mdx-bundler and got most things working pretty quickly.</p>
+
+<h2 id="server-side">Server Side</h2>
+
+<p>MDX Bundler’s server side component is <code class="language-plaintext highlighter-rouge">bundleMDX</code>. This takes your mdx source as a string as well as a few options.</p>
+
+<p>I have all my MDX running through the function <code class="language-plaintext highlighter-rouge">prepareMDX</code> which is just a middle man between my pages and MDX Bundler. It takes the source MDX and the imported files as arguments.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span><span class="nx">bundleMDX</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">mdx-bundler</span><span class="dl">'</span>
+
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">prepareMDX</span> <span class="o">=</span> <span class="k">async </span><span class="p">(</span><span class="nx">source</span><span class="p">:</span> <span class="kr">string</span><span class="p">,</span> <span class="nx">files</span><span class="p">?:</span> <span class="nb">Record</span><span class="o">&lt;</span><span class="kr">string</span><span class="p">,</span> <span class="kr">string</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span> 
+  <span class="kd">const</span> <span class="p">{</span><span class="nx">code</span><span class="p">}</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">bundleMDX</span><span class="p">(</span><span class="nx">source</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">files</span>
+  <span class="p">})</span>
+
+  <span class="k">return</span> <span class="nx">code</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">files</code> is an object that contains the source for files imported in your MDX. This part is very much up to your structure. I have any components used by a post in the same folder as the post so I wrote a <code class="language-plaintext highlighter-rouge">getComponents</code> function which takes the directory and returns any tsx files in it as <code class="language-plaintext highlighter-rouge">{'./file.tsx': 'content'}</code></p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nx">fs</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">fs</span><span class="dl">'</span>
+<span class="k">import</span> <span class="nx">path</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">path</span><span class="dl">'</span>
+<span class="k">import</span> <span class="p">{</span><span class="nx">asyncForEach</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@arcath/utils</span><span class="dl">'</span>
+
+<span class="kd">const</span> <span class="p">{</span><span class="nx">readdir</span><span class="p">,</span> <span class="nx">readFile</span><span class="p">}</span> <span class="o">=</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">promises</span>
+
+<span class="kr">interface</span> <span class="nx">Components</span><span class="p">{[</span><span class="nx">file</span><span class="p">:</span> <span class="kr">string</span><span class="p">]:</span> <span class="kr">string</span><span class="p">}</span>
+
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">getComponents</span> <span class="o">=</span> <span class="k">async </span><span class="p">(</span><span class="nx">directory</span><span class="p">:</span> <span class="kr">string</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="na">components</span><span class="p">:</span> <span class="nx">Components</span> <span class="o">=</span> <span class="p">{}</span>
+
+  <span class="kd">const</span> <span class="nx">files</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">readdir</span><span class="p">(</span><span class="nx">directory</span><span class="p">)</span>
+
+  <span class="k">await</span> <span class="nf">asyncForEach</span><span class="p">(</span><span class="nx">files</span><span class="p">,</span> <span class="k">async </span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span><span class="nx">file</span><span class="p">.</span><span class="nf">substr</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">)</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">tsx</span><span class="dl">'</span><span class="p">){</span>
+      <span class="kd">const</span> <span class="nx">fileBuffer</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">readFile</span><span class="p">(</span><span class="nx">path</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="nx">directory</span><span class="p">,</span> <span class="nx">file</span><span class="p">))</span>
+
+      <span class="nx">components</span><span class="p">[</span><span class="s2">`./</span><span class="p">${</span><span class="nx">file</span><span class="p">}</span><span class="s2">`</span><span class="p">]</span> <span class="o">=</span> <span class="nx">fileBuffer</span><span class="p">.</span><span class="nf">toString</span><span class="p">().</span><span class="nf">trim</span><span class="p">()</span>
+    <span class="p">}</span>
+  <span class="p">})</span>
+
+  <span class="k">return</span> <span class="nx">components</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Bringing this all together in <code class="language-plaintext highlighter-rouge">getStaticProps</code> I now fetch the post, its components and then pass that to <code class="language-plaintext highlighter-rouge">prepareMDX</code>.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">export</span> <span class="kd">const</span> <span class="nx">getStaticProps</span> <span class="o">=</span> <span class="k">async </span><span class="p">({</span><span class="nx">params</span><span class="p">}:</span> <span class="nx">GetStaticPropsContext</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">if</span><span class="p">(</span><span class="nx">params</span><span class="p">?.</span><span class="nx">slug</span> <span class="o">&amp;&amp;</span> <span class="nx">params</span><span class="p">.</span><span class="nx">year</span> <span class="o">&amp;&amp;</span> <span class="nx">params</span><span class="p">.</span><span class="nx">month</span><span class="p">){</span>
+    <span class="kd">const</span> <span class="nx">post</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">getPostBySlug</span><span class="p">([</span><span class="nx">params</span><span class="p">.</span><span class="nx">year</span> <span class="k">as</span> <span class="kr">string</span><span class="p">,</span> <span class="nx">params</span><span class="p">.</span><span class="nx">month</span> <span class="k">as</span> <span class="kr">string</span><span class="p">,</span> <span class="nx">params</span><span class="p">.</span><span class="nx">slug</span> <span class="k">as</span> <span class="kr">string</span><span class="p">],</span> <span class="p">[</span><span class="dl">'</span><span class="s1">slug</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">title</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">content</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">lead</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">href</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">tags</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">year</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">month</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">day</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">directory</span><span class="dl">'</span><span class="p">])</span>
+
+    <span class="kd">const</span> <span class="nx">components</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">getComponents</span><span class="p">(</span><span class="nx">post</span><span class="p">.</span><span class="nx">directory</span><span class="p">)</span>
+
+    <span class="kd">const</span> <span class="nx">source</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">prepareMDX</span><span class="p">(</span><span class="nx">post</span><span class="p">.</span><span class="nx">content</span><span class="p">,</span> <span class="nx">components</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="na">props</span><span class="p">:</span> <span class="p">{</span>
+        <span class="na">post</span><span class="p">:</span> <span class="nf">pick</span><span class="p">(</span><span class="nx">post</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">slug</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">title</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">lead</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">href</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">tags</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">year</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">month</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">day</span><span class="dl">'</span><span class="p">]),</span>
+        <span class="nx">source</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><a id="esbuild-executable"></a></p>
+
+<h3 id="error-spawn-esbuildexe-enoent">Error: spawn \esbuild.exe ENOENT</h3>
+
+<p>It appears that Next.JS/Webpack break <code class="language-plaintext highlighter-rouge">__dirname</code>. This is then causing esbuild to come up with the wrong path for its executable which means builds fail, or should I say development builds fail.</p>
+
+<p>Thankfully esbuilds executable path can be overridden with an environment variable, <code class="language-plaintext highlighter-rouge">ESBUILD_BINARY_PATH</code>. You could just specify this variable at run time however as it needs to be the full path it will be unique to your computer and maybe hard to set on CI. My solution was to set the variable in Node which only applies it for the duration of the process.</p>
+
+<p>To do this I added this to my <code class="language-plaintext highlighter-rouge">prepareMDX</code> function.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">platform</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">win32</span><span class="dl">"</span><span class="p">){</span>
+  <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">ESBUILD_BINARY_PATH</span> <span class="o">=</span> <span class="nx">path</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nf">cwd</span><span class="p">(),</span> <span class="dl">'</span><span class="s1">node_modules</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">esbuild</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">esbuild.exe</span><span class="dl">'</span><span class="p">)</span>
+<span class="p">}</span><span class="k">else</span><span class="p">{</span>
+  <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">ESBUILD_BINARY_PATH</span> <span class="o">=</span> <span class="nx">path</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nf">cwd</span><span class="p">(),</span> <span class="dl">'</span><span class="s1">node_modules</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">esbuild</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">bin</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">esbuild</span><span class="dl">'</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>With that I’ve had no problems on my computer or Vercel and should be portable to any system.</p>
+
+<h2 id="client-side">Client Side</h2>
+
+<p>So now <code class="language-plaintext highlighter-rouge">perpareMDX</code> and <code class="language-plaintext highlighter-rouge">bundleMDX</code> have done their jobs and got the bundled code to React its time to use it.</p>
+
+<p>MDX Bundler supplies <code class="language-plaintext highlighter-rouge">getMDXComponent</code> to turn the string of compiled code into something you can mount.</p>
+
+<p>Again I have a single component that takes the source and does everything I need to it. This goes back to when <a href="/2019/05/using-htmr-to-bring-life-to-links-in-gatsby">I started using HTMR</a> to improve the rendered output so I only need to update the MDX rendering in one place.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nx">React</span><span class="p">,</span> <span class="p">{</span><span class="nx">useMemo</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react</span><span class="dl">'</span>
+<span class="k">import</span> <span class="p">{</span><span class="nx">getMDXComponent</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">mdx-bundler/client</span><span class="dl">'</span>
+
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">MDX</span><span class="p">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">FC</span><span class="o">&lt;</span><span class="p">{</span><span class="na">source</span><span class="p">:</span> <span class="kr">any</span><span class="p">}</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">({</span><span class="nx">source</span><span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">Component</span> <span class="o">=</span> <span class="nf">useMemo</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="nf">getMDXComponent</span><span class="p">(</span><span class="nx">source</span><span class="p">),</span> <span class="p">[</span><span class="nx">source</span><span class="p">])</span>
+
+  <span class="k">return</span> <span class="o">&lt;</span><span class="nx">Component</span> <span class="o">/&gt;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>This is a simplified example. I do more here with replacing some components and some shorthands to display MDX with a heading, you can <a href="https://github.com/Arcath/arcath.net-next/blob/main/lib/components/mdx.tsx">view the whole file on GitHub</a>.</p>
+
+<p>There isn’t much to show on the pages themselves as this post for example just uses <code class="language-plaintext highlighter-rouge">&lt;MDX source={source} /&gt;</code>.</p>
+
+<h2 id="more">More</h2>
+
+<p>There is alot more you can do with MDX Bundler, like supplying globals, changing the build target and more. The <a href="https://github.com/kentcdodds/mdx-bundler#options">Readme</a> has a full list of the options and I encourage you to check it out.</p>
+
+<p>Overall I’ve been very happy with MDX Bundler and 2.0.0 has fixed my inital issue and brought in quite a few improvements. I encourage you to check it out, it works very well with Next.JS and will work with any framework.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

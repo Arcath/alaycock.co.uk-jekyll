@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Papercut Client deployment with Intune</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Papercut Client deployment with Intune</h1>
+  <ul class="flex gap-2">
+    <li>21 July 2022</li>
+    
+      <li><a href="/tag/papercut">#papercut</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>Papercut have a <a href="https://www.papercut.com/kb/Main/DeployUserClientwithMS-Intune">“handy” guide</a> on how to deploy the client using Intune on their site which I thought was going to be the end of this. However there are 2 fatal flaws with their approach.</p>
+
+<ol>
+  <li>It deploys in the user’s context so if they aren’t a local admin on the computer it will fail to install.</li>
+  <li>Post install it wont auto start.</li>
+</ol>
+
+<p>Looking at the comments on that article there is a solution to point 1 which with a couple of minor edits could be a solution to point 2.</p>
+
+<blockquote>
+  <p>If you are deploying the NG client simply change <code class="language-plaintext highlighter-rouge">MF</code> to <code class="language-plaintext highlighter-rouge">NG</code> in any paths below.</p>
+</blockquote>
+
+<h2 id="installps1">install.ps1</h2>
+
+<p>The MSI contains a property that tells Intune that this is a user context app which means Intune wont offer the option to install it in the system context. This means the only way to run it in the system context is to wrap it in a script.</p>
+
+<p>To get the suggested script to setup auto start the client as well it just needs to create a registry key in <code class="language-plaintext highlighter-rouge">HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run</code> that points to <code class="language-plaintext highlighter-rouge">pc-client.exe</code>.</p>
+
+<p>I’ve also added a function from <a href="https://www.jonathanmedd.net/2014/02/testing-for-the-presence-of-a-registry-key-and-value.html">Jonathan Medd</a> to test is the property exists before creating it.</p>
+
+<pre><code class="language-ps1">$argumentlist = "/qn /L papercut.log ALLUSERS=1"
+
+# See https://www.jonathanmedd.net/2014/02/testing-for-the-presence-of-a-registry-key-and-value.html
+function Test-RegistryValue {
+    param (
+        [parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]$Path,
+
+        [parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]$Value
+    )
+
+    try {
+        Get-ItemProperty -Path $Path | Select-Object -ExpandProperty $Value -ErrorAction Stop | Out-Null
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+try {
+    Start-Process ".\win\pc-client-admin-deploy.msi" -ArgumentList $argumentlist
+    if(-Not (Test-RegistryValue -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run" -Value "PapercutMFClient")){
+        New-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "PaperCutMFClient" -Value "C:\Program Files\PaperCut MF Client\pc-client.exe"
+    }
+} catch {
+    Write-Output "$($env:COMPUTERNAME) Error: $($_.Exception.Message)"
+}
+</code></pre>
+
+<h2 id="uninstallps1">uninstall.ps1</h2>
+
+<p>With Intune you need to make sure that it can uninstall the item as well, you never know if Papercut are going to release a new client that doesn’t update the existing one. Uninstall is pretty much the same process, run the uninstall command and delete the registry key.</p>
+
+<pre><code class="language-ps1">$argumentlist = '/x "{A213EB00-99FE-11EC-BC52-DA2D66F1ACF7}" /qn /L papercut.log'
+try {
+    Start-Process "msiexec" -ArgumentList $argumentlist
+    Remove-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "PaperCutMFClient"
+} catch {
+    Write-Output "$($env:COMPUTERNAME) Error: $($_.Exception.Message)"
+}
+</code></pre>
+
+<h2 id="packaging-and-deploying">Packaging and Deploying</h2>
+
+<p>As per the guide from Papercut, copy the whole of the PCClient folder over to your source folder and then paste in <code class="language-plaintext highlighter-rouge">install.ps1</code> and <code class="language-plaintext highlighter-rouge">uninstall.ps1</code>. Then run the <a href="https://github.com/Microsoft/Microsoft-Win32-Content-Prep-Tool">Intune Packager</a> to create your <code class="language-plaintext highlighter-rouge">.intunewin</code> file.</p>
+
+<p><img src="/assets/2022/02/papercut-client-deployment-with-intune/papercut-pacakge.jpg" alt="Intune packaging window" /></p>
+
+<p>Then on Intune create a new <em>Windows App (Win32)</em> and upload the <code class="language-plaintext highlighter-rouge">.intunewin</code> you just created.</p>
+
+<p>I set the name to <em>Papercut MF Client</em>, gave it a quick description and set the version/publisher as needed.</p>
+
+<p>The install command needs to be:</p>
+
+<pre><code class="language-cmd">powershell -executionpolicy bypass -file install.ps1
+</code></pre>
+<p>and the uninstall command needs to be:</p>
+
+<pre><code class="language-cmd">powershell -executionpolicy bypass -file uninstall.ps1
+</code></pre>
+
+<p>Crucially make sure that the <em>Install behavior</em> is <em>System</em>.</p>
+
+<p>The current client is 64 Bit only and runs on any Windows 10.</p>
+
+<p>For detection rules I used a <em>Rule Type</em> of <em>File</em>, a <em>Path</em> of <code class="language-plaintext highlighter-rouge">C:\Program Files\PaperCut MF Client</code>, a <em>File or folder</em> of <code class="language-plaintext highlighter-rouge">pc-client.exe</code> and a <em>Detection method</em> of <em>File or folder exists</em>.</p>
+
+<p><img src="/assets/2022/02/papercut-client-deployment-with-intune/papercut-detection.jpg" alt="Detection Rules" /></p>
+
+<p>It has no requirements or supersedence (until we update it) so its just a case of selecting the group to deploy it to. I have a group for all on-site workstations which I applied it to.</p>
+
+<h2 id="thats-it">That’s It!</h2>
+
+<p>The only weird thing is that despite the script explicitly stating <code class="language-plaintext highlighter-rouge">HKLM:\Software\Microsoft\Windows\CurrentVersion\Run</code> for the value it gets created in <code class="language-plaintext highlighter-rouge">HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run</code>. This isn’t any issue for us as both keys work but for other software you might <a href="https://call4cloud.nl/2021/05/the-sysnative-witch-project/">find this article interesting</a>.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

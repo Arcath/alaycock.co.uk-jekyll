@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Expects</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Expects</h1>
+  <ul class="flex gap-2">
+    <li>28 August 2013</li>
+    
+      <li><a href="/tag/ruby">#ruby</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>Expects is lightweight DSL for defining what you expect a method to receive as input.</p>
+
+<p>I’d expect this gem to be used more as a support gem, being a dependancy for other gems to use to make sure that what the end user/developer was passing met with requirements.</p>
+
+<p>Expects is pretty simple to use, say you had this class</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ARLikeAPI</span>
+    <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">find_by_email</span><span class="p">(</span><span class="n">email</span><span class="p">)</span>
+        <span class="no">SomeApi</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"email"</span><span class="p">,</span> <span class="n">email</span><span class="p">)</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Say <code class="language-plaintext highlighter-rouge">SomeApi.where</code> raises an exception if email isn’t a string, you could call <code class="language-plaintext highlighter-rouge">email.to_s</code> to convert email to a string, but what happens if email is some random class that can’t be converted? If you add expects to this class like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ARLikeAPI</span>
+    <span class="kp">include</span> <span class="no">Expects</span>
+
+    <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">find_by_email</span><span class="p">(</span><span class="n">email</span><span class="p">)</span>
+        <span class="n">expects</span> <span class="n">email</span><span class="p">,</span> <span class="no">String</span>
+
+        <span class="no">SomeApi</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"email"</span><span class="p">,</span> <span class="n">email</span><span class="p">)</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now a call to <code class="language-plaintext highlighter-rouge">ARLikeAPI.find_by_email</code> that isn’t passed a string will raise <code class="language-plaintext highlighter-rouge">UnexpectedInput</code> which contains a human readable message of the problem as aswell as the subject (<code class="language-plaintext highlighter-rouge">email</code>) and the expected input (<code class="language-plaintext highlighter-rouge">String</code>)</p>
+
+<p>You can also pass an array of classes to allow multiple types e.g.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">num1</span><span class="p">,</span> <span class="n">num2</span><span class="p">)</span>
+    <span class="n">expects</span> <span class="n">num1</span><span class="p">,</span> <span class="p">[</span><span class="no">Fixnum</span><span class="p">,</span> <span class="no">Float</span><span class="p">]</span>
+    <span class="n">expects</span> <span class="n">num2</span><span class="p">,</span> <span class="p">[</span><span class="no">Fixnum</span><span class="p">,</span> <span class="no">Float</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This would let a number of either Fixnum or Float through but raise an exception if anything else was passed.</p>
+
+<p>There is an inverse method called <code class="language-plaintext highlighter-rouge">reject</code> which as the name implies lets anything through except for the items in the list.</p>
+
+<p>Expects can also be used to validate input for example</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">send_email</span><span class="p">(</span><span class="n">email</span><span class="p">)</span>
+    <span class="n">expects</span> <span class="n">email</span><span class="p">,</span> <span class="sr">/^.*@.*$/</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This would raise an exception if the supplied string didn’t have an <em>@</em> somewhere in the middle.</p>
+
+<p>As I have said Expects main audience is Gem Developers who want to stop their code doing something damaging when the end user gives it an input that its not expecting.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

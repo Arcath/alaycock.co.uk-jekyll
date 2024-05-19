@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Office Update Remover</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Office Update Remover</h1>
+  <ul class="flex gap-2">
+    <li>20 September 2017</li>
+    
+      <li><a href="/tag/office-2016">#office-2016</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>Over at <a href="https://www.ed-itsolutions.com/">Ed-IT Solutions</a>, we have been having a fun time with KB4011039, an Office update that can cause some pretty big problems for teachers. It makes the text inside merged table cells invisible and you can’t select the table cell at all. This is a huge pain for teachers whos planning is 90% merged table cells.</p>
+
+<p>With Microsoft not releasing a fix until October 3rd we are forced to remove the defective update from the machines. If it was a normal Windows update wusa would be able to remove it rather easily but it can’t remove Office updates.</p>
+
+<p>Removing an Office update involves finding the package ID for the given update and for the installed Office and then using msiexec to remove the given patch.</p>
+
+<p>Obviously, before you try removing the update you need to unapprove it in WSUS or block it on the computers.</p>
+
+<h2 id="office-update-remover">Office Update Remover</h2>
+
+<p>Finding these ID’s is a pain and it can be different from machine to machine. To that end, I have written a small Powershell script to remove any Office update by KB number.</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#############################################################</span><span class="w">
+</span><span class="c">#</span><span class="w">
+</span><span class="c"># Office Update Remover</span><span class="w">
+</span><span class="c">#</span><span class="w">
+</span><span class="c"># By Adam Laycock (arcath.net)</span><span class="w">
+</span><span class="c"># September 2017</span><span class="w">
+</span><span class="c">#</span><span class="w">
+</span><span class="c">#############################################################</span><span class="w">
+</span><span class="kr">Param</span><span class="p">(</span><span class="w">
+    </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="o">=</span><span class="nv">$True</span><span class="p">,</span><span class="n">Position</span><span class="o">=</span><span class="mi">1</span><span class="p">)][</span><span class="n">string</span><span class="p">]</span><span class="nv">$kb</span><span class="w">
+</span><span class="p">)</span><span class="w">
+
+</span><span class="nv">$officePID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$False</span><span class="w">
+</span><span class="nv">$updatePID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$False</span><span class="w">
+
+</span><span class="n">Get-ChildItem</span><span class="w"> </span><span class="nx">HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall</span><span class="w"> </span><span class="nt">-rec</span><span class="w"> </span><span class="nt">-ea</span><span class="w"> </span><span class="nx">SilentlyContinue</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kr">foreach</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nv">$currentKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-ItemProperty</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">PsPath</span><span class="w">
+    </span><span class="nx">if</span><span class="p">(</span><span class="nv">$currentKey</span><span class="o">.</span><span class="nf">DisplayName</span><span class="w"> </span><span class="o">-like</span><span class="w"> </span><span class="s2">"*"</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">$kb</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s2">"*"</span><span class="p">){</span><span class="w">
+        </span><span class="nv">$parts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$currentKey</span><span class="o">.</span><span class="nf">PSChildName</span><span class="o">.</span><span class="nf">Split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span><span class="w">
+        </span><span class="nv">$officePID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w">
+        </span><span class="nv">$updatePID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="c"># If the patch was not in 64bit registry look in 32 bit</span><span class="w">
+</span><span class="kr">if</span><span class="p">(</span><span class="nv">$officePID</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="nv">$False</span><span class="w"> </span><span class="o">-and</span><span class="w"> </span><span class="nv">$updatePID</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="nv">$False</span><span class="p">){</span><span class="w">
+    </span><span class="n">Get-ChildItem</span><span class="w"> </span><span class="nx">HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall</span><span class="w"> </span><span class="nt">-rec</span><span class="w"> </span><span class="nt">-ea</span><span class="w"> </span><span class="nx">SilentlyContinue</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kr">foreach</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nv">$currentKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-ItemProperty</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">PsPath</span><span class="w">
+        </span><span class="nx">if</span><span class="p">(</span><span class="nv">$currentKey</span><span class="o">.</span><span class="nf">DisplayName</span><span class="w"> </span><span class="o">-like</span><span class="w"> </span><span class="s2">"*"</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">$kb</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s2">"*"</span><span class="p">){</span><span class="w">
+            </span><span class="nv">$parts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$currentKey</span><span class="o">.</span><span class="nf">PSChildName</span><span class="o">.</span><span class="nf">Split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span><span class="w">
+            </span><span class="nv">$officePID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w">
+            </span><span class="nv">$updatePID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="kr">if</span><span class="p">(</span><span class="nv">$officePID</span><span class="w"> </span><span class="o">-ne</span><span class="w"> </span><span class="nv">$False</span><span class="w"> </span><span class="o">-and</span><span class="w"> </span><span class="nv">$updatePID</span><span class="w"> </span><span class="o">-ne</span><span class="w"> </span><span class="nv">$False</span><span class="p">){</span><span class="w">
+    </span><span class="bp">$args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">@(</span><span class="w">
+        </span><span class="s2">"/package"</span><span class="w">
+        </span><span class="nv">$officePID</span><span class="w">
+        </span><span class="s2">"/uninstall"</span><span class="w">
+        </span><span class="nv">$updatePID</span><span class="w">
+        </span><span class="s2">"/qn"</span><span class="w">
+        </span><span class="s2">"/quiet"</span><span class="w">
+        </span><span class="s2">"/norestart"</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+
+    </span><span class="n">Write-Host</span><span class="w"> </span><span class="s2">"msiexec"</span><span class="w"> </span><span class="bp">$args</span><span class="w">
+
+    </span><span class="n">Start-Process</span><span class="w"> </span><span class="s2">"msiexec.exe"</span><span class="w"> </span><span class="nt">-ArgumentList</span><span class="w"> </span><span class="bp">$args</span><span class="w"> </span><span class="nt">-Wait</span><span class="w"> </span><span class="nt">-NoNewWindow</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>As you can see its rather simple. It searches the uninstall registry keys for an entry containing the KB number specified in the script. If it finds the KB number it grabs the Office Package ID and the Updates patch ID and then runs the required MSI exec command to remove it.</p>
+
+<p>It has a check the ensure that it found the update before trying to remove it which means it’s safe to leave this script running even after the machine is fixed.</p>
+
+<h2 id="deployment">Deployment</h2>
+
+<p>Having the script is only half the battle. This needs deploying to every computer on the network. GPO startup scripts are fine for this script and being run as SYSTEM will let them uninstall the required update.</p>
+
+<p>I already had an Office 2016 deployment GPO which applies to every computer in school with Office installed. In <em>Computer Configuration -&gt; Policies -&gt; Windows Settings -&gt; Scripts (Startup/Shutdown)</em> open up <em>Startup</em> and click on the <em>PowerShell Scripts</em> tab.</p>
+
+<p>Add a new script pointed at <em>OfficeUpdateRemover.ps1</em> and set its <em>arguments</em> to <code class="language-plaintext highlighter-rouge">-kb NUMBER</code> e.g. <code class="language-plaintext highlighter-rouge">-kb 4011039</code>.</p>
+
+<p><img src="/assets/2017/09/office-update-remover/add-the-script.png" alt="Add the Script" /></p>
+
+<p>If there are any other updates in the future that have problems you can add the same script again with different arguments.</p>
+
+<p>I hope this helps anyone having similar problems. Any questions let me know in the comments.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

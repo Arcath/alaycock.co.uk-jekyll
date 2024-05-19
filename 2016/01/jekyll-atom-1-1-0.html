@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Jekyll Atom 1.1.0</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Jekyll Atom 1.1.0</h1>
+  <ul class="flex gap-2">
+    <li>25 January 2016</li>
+    
+      <li><a href="/tag/jekyll-atom">#jekyll-atom</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p><a href="https://github.com/Arcath/jekyll-atom">Jekyll-Atom</a> has just hit 1.1.0 and with this release comes some new features and adjustments to the current ones.</p>
+
+<p>I outlined my ideas in the <a href="/2016/01/state-of-the-universe">state of the universe</a> and I think I have met them all with this update.</p>
+
+<h2 id="configuration">Configuration</h2>
+
+<p>In 1.1.0 the config is a lot leaner favouring settings from <code class="language-plaintext highlighter-rouge">_config.yml</code> instead of settings in your editor. This enables <em>settings per project</em> which quite a few people had asked for.</p>
+
+<p><code class="language-plaintext highlighter-rouge">Layouts Dir</code> and <code class="language-plaintext highlighter-rouge">Layouts Type</code> are gone in favour of getting <code class="language-plaintext highlighter-rouge">layouts_dir</code> from <code class="language-plaintext highlighter-rouge">_config.yml</code> and guessing the type by finding a file with the name of your layout and opening it.</p>
+
+<p><code class="language-plaintext highlighter-rouge">Posts Dir</code>, <code class="language-plaintext highlighter-rouge">draftsDir</code> and <code class="language-plaintext highlighter-rouge">Posts Type</code> are gone as Jekyll doesn’t let you change them so they can be fixed in the code.</p>
+
+<p><code class="language-plaintext highlighter-rouge">Includes Dir</code> and <code class="language-plaintext highlighter-rouge">Data Dir</code> are gone in favour of getting <code class="language-plaintext highlighter-rouge">includes_dir</code> and <code class="language-plaintext highlighter-rouge">data_dir</code> respectively.</p>
+
+<p>Build Command is now the <em>default</em> build command and you can override it in your sites <code class="language-plaintext highlighter-rouge">_config.yml</code> like so:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">atom</span><span class="pi">:</span>
+ <span class="na">buildCommand</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">jekyll</span>
+  <span class="pi">-</span> <span class="s">build</span>
+  <span class="pi">-</span> <span class="s">--option</span>
+  <span class="pi">-</span> <span class="s">--this</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">buildCommand</code> is the only option in the <code class="language-plaintext highlighter-rouge">atom</code> namespace so far but its open to change as time goes on.</p>
+
+<h2 id="under-the-hood">Under the hood</h2>
+
+<p>Big things have happened under the hood in this release. A massive re shuffle of the files and moving quite a few functions out into a <code class="language-plaintext highlighter-rouge">Utils</code> module.</p>
+
+<p>All the commands are now in a wrapper that takes 3 options, the command to run, whether it needs to config loaded before it can run and whether it needs an active editor. This removes tonnes of duplication and makes everything a bit neater.</p>
+
+<p>The draft commands now work reliably</p>
+
+<h2 id="build-speed">Build Speed</h2>
+
+<p>As I mentioned <a href="/2016/01/improving-speed-in-jekyll-atom">in another post</a> this is more to do with Jekyll than Jekyll-Atom. To summarise you can greatly increase the build speed by adding <code class="language-plaintext highlighter-rouge">incremental: true</code> to your <code class="language-plaintext highlighter-rouge">_config.yml</code> which enables an experimental feature in Jekyll 3+ that only builds the pages that have been modified, it falls over with post lists on other pages etc… but for drafting purposes its pretty good.</p>
+
+<h2 id="in-conclusion">In Conclusion</h2>
+
+<p>1.1.0 is a big push forward that should make Jekyll-Atom a much more appealing package.</p>
+
+<p>Any issues let me know in the github repository!</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

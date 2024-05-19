@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Dark Mode</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Dark Mode</h1>
+  <ul class="flex gap-2">
+    <li>23 April 2019</li>
+    
+      <li><a href="/tag/blog">#blog</a></li>
+    
+      <li><a href="/tag/gatsby">#gatsby</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>I’ve redesigned my site! If you followed me back when I used Jekyll this was a regular occurance and something that using a static site generator makes so easy.</p>
+
+<p>There has been a trend of late of adding a <em>dark mode</em> to sites. From what I can see there are 2 main reasons for this. The darker page is kinder on the eyes when viewed in a low-light environment and with the growing number of users who desktops are running in dark mode all the time it reduces the contrast they experiance.</p>
+
+<p>Quite a few sites are adding functionality to switch between light and dark mode (for example <a href="https://smakosh.com/how-to-add-dark-mode-easily-with-a-custom-react-hook">with react hooks</a>) which I could have used here but for now at least I’m leading with dark mode.</p>
+
+<p>My decision to drop <em>light mode</em> came around for a few reasons.</p>
+
+<ol>
+  <li>There is no way to tell if the user is using dark mode on their device (<a href="https://caniuse.com/#feat=prefers-color-scheme">yet</a>). This means I have to default to either light or dark and let the user switch, I can see a scenario where a dark mode user would be blinded by light mode before swapping whilst I can’t think of a negative for light mode users who load up in dark mode.</li>
+  <li>Maintaining two colour schemes means maintaining two colour schemes. I’d have a harder job testing content against both colour schemes and with accessibility in mide I’d rather put my focus into a single <em>theme</em>.</li>
+  <li>I’d like users to have a consistent experiance. If I’m making content I’d like all my users to see it at its best and invariably there will be content that looks better in one mode.</li>
+</ol>
+
+<p>Following the example of resir014’s <a href="https://resir014.xyz/design/">design page</a> I’ve put all the elements of the site onto a single page for testing and showing off. You can see this page <a href="/elements">here</a> and I will be updating it as I add more features.</p>
+
+<p>I have ideas on how to exampnd this site which I hope to get going soon and I welcome any feedback you have on the new layout.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

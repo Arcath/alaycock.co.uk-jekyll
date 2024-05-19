@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Deploying Swiggle Screen Cover</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Deploying Swiggle Screen Cover</h1>
+  <ul class="flex gap-2">
+    <li>14 February 2020</li>
+    
+      <li><a href="/tag/work">#work</a></li>
+    
+      <li><a href="/tag/chrome">#chrome</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><blockquote>
+  <p>This is a follow on to my article on <a href="/2019/10/setting-swiggle-as-the-default-search-provider-for-chrome">setting Swiggle as the default search provider in chrome</a>.</p>
+</blockquote>
+
+<p>Swiggle Screen Cover is an extension for Chrome that gives pupils a button to cover the website. Teachers can then view a report to see which site they covered and report it to Swiggle.</p>
+
+<p>As before I need to deploy it to a whole school network at once which is best achieved through Group Policy.</p>
+
+<p>If you haven’t already head got the ADMX Templates for Chrome installed head over to Chrome’s support site and <a href="https://support.google.com/chrome/a/answer/187202?hl=en">grab a copy of them</a>.</p>
+
+<h2 id="deploying-the-extension">Deploying the Extension</h2>
+
+<p>Getting the extension out to the clients is actually pretty easy with the ADMX templates. You only need 2 peices of information about the extension, its ID and where to update it from. For Swiggle thats easy as its listed on the <a href="https://chrome.google.com/webstore/detail/swiggleorguk/hbnncioglhbalkgbpbfhnmpihojjjcbi">Chrome Web Store</a>. The ID is <code class="language-plaintext highlighter-rouge">hbnncioglhbalkgbpbfhnmpihojjjcbi</code> as found at the end of the URL and the update URL for all Chrome Web Store extensions is <code class="language-plaintext highlighter-rouge">https://clients2.google.com/service/update2/crx</code>.</p>
+
+<p>Open up your GPO and go to <em>Computer or User Configuration\Policies\Administrative Templates\Google\Google Chrome\Extensions</em>.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Setting</th>
+      <th style="text-align: left">Value</th>
+      <th style="text-align: left">About</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">Configure the list of force-installed apps and extensions</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">hbnncioglhbalkgbpbfhnmpihojjjcbi;https://clients2.google.com/service/update2/crx</code></td>
+      <td style="text-align: left">This is the extensions ID and the update URL seperated by a <code class="language-plaintext highlighter-rouge">;</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Thats it! Swiggle Screen Cover will now be deployed and kept up to date automatically by Chrome.</p>
+
+<p>As I mentioned in my last article I actually use my own intranet style page for the new-tab screen and it is not over-ridden by this extension which is a bonus.</p>
+
+<p>I hope this has been helpful and if you have any questions feel free to get in touch.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

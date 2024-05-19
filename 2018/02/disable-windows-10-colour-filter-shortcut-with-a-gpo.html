@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Disable Windows 10 Colour Filter Shortcut with a GPO</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Disable Windows 10 Colour Filter Shortcut with a GPO</h1>
+  <ul class="flex gap-2">
+    <li>08 February 2018</li>
+    
+      <li><a href="/tag/windows-10">#windows-10</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>I came across an interesting problem today. A Windows 10 1709 machine was black and white and no one knew how it had happened.</p>
+
+<p>Windows 10 has a colour filter system to help colour blind users that has the rather badly placed shortcut <code class="language-plaintext highlighter-rouge">Windows+Ctrl+C</code>. That’s right a shortcut that by default makes the screen black and white is 1 key away from the copy shortcut.</p>
+
+<p>It can be turned off just as easily with <code class="language-plaintext highlighter-rouge">Windows+Ctrl+C</code> but that doesn’t help prevent the problem happening in the first place.</p>
+
+<h2 id="disable-the-shortcut">Disable the Shortcut</h2>
+
+<p>A few google searches showed me that there used to be a <a href="https://www.nextofwindows.com/windows-10-color-filters#Disable_the_shortcut_key_to_turn_on_the_color_filters">tick box</a> for this that had a <a href="https://winaero.com/blog/enable-disable-color-filters-hotkey-windows-10/">registry key</a> alongside it. This appears to be gone in 1709.</p>
+
+<p>Setting the registry keys to off would disable it on next sign in but not stop a user toggling it.</p>
+
+<p>The solution I found was to set the <em>FilterType</em> registry key to a number that didn’t match a filter. Now when a user enables colour filters nothing changes, it says you have a filter enabled but no filter is applied. A user going into settings to enable it and change the filter would be able to, but it would un-apply next sign in.</p>
+
+<p>Open up <em>regedit</em> and head to <code class="language-plaintext highlighter-rouge">HKEY_CURRENT_USER\Software\Microsoft\ColorFiltering</code> change the FilterType key to any number over 5 (I used 10).</p>
+
+<p><img src="/assets/2018/02/disable-windows-10-colour-filter-shortcut-with-a-gpo/color-filter-disable.png" alt="Color Filter Registry Settings" /></p>
+
+<h2 id="disable-the-shortcut-with-a-gpo">Disable the Shortcut with a GPO</h2>
+
+<p>Now that we have a registry key to fix the problem its a simple matter of using GPP registry settings to update the key for each user.</p>
+
+<p>As this is a User registry key the policy needs to be applied to users.</p>
+
+<p>In your, GPO open <code class="language-plaintext highlighter-rouge">User Configuration/Preferences/Windows Settings/Registry</code> and add a new item with these settings.</p>
+
+<p><img src="/assets/2018/02/disable-windows-10-colour-filter-shortcut-with-a-gpo/gpp-registry.png" alt="GPP Registry Settings" /></p>
+
+<p>This has to be a <em>replace</em> action as the key doesn’t exist until the first time it is used.</p>
+
+<p>Hopefully, this helps you fix this problem on your network. Obviously, if you do want colour filters you can use item-level targeting to exclude colour blind users from this registry fix.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

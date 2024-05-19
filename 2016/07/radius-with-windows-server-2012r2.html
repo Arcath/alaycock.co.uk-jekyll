@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>RADIUS With Windows Server 2012R2</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">RADIUS With Windows Server 2012R2</h1>
+  <ul class="flex gap-2">
+    <li>22 July 2016</li>
+    
+      <li><a href="/tag/security">#security</a></li>
+    
+      <li><a href="/tag/ed-itsolutions">#ed-itsolutions</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>RADIUS is a form of network security that can link into your Windows Domain. The most common use (at least in my experience) is to secure Wireless Networks. Using RADIUS has the advantage of no shared key that has to be entered on each device, you can allow all domain computers to connect with their computer account and limit users to some trusted staff who only need their domain account to connect.</p>
+
+<p>Before I started I had a fully functioning Windows Domain Controller with AD setup for normal use.</p>
+
+<h2 id="adcs">ADCS</h2>
+
+<p>Active Directory Certificate Services is used to generate the certificate that your RADIUS server will use to identify itself.</p>
+
+<p>Open the <em>Add Roles and Features</em> wizard from server manager, select your DC and tick <em>Active Directory Certificate Services</em>.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-adcs-1.png" alt="Adding ADCS" /></p>
+
+<p>Agree to the required features and click next. Click next again on the features screen and again on the <em>AD CS</em> screen.</p>
+
+<p>On the <em>Role Services</em> screen you only need <em>Certification Authority</em> ticked.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-adcs-2.png" alt="Select Certification Authority" /></p>
+
+<p>Click Next and then confirm the install.</p>
+
+<p>Once the install finishes click <em>Configure Active Directory Certificate Services on the destination server</em>.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-adcs-3.png" alt="Configure Active Directory Certificate Servers on the destination server" /></p>
+
+<p>In the wizard that pops up select the user you want to install the service as (in my case it was the same as my logged in user) and hit next.</p>
+
+<p>When asked to <em>Select Role Services</em> to configure tick <em>Certification Authority</em>.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-adcs-4.png" alt="Select services to configure" /></p>
+
+<p>Select <em>Enterprise CA</em> and hit next, then select <em>Root CA</em> and hit next.</p>
+
+<p>Select <em>Create a new private key</em> and hit next. On the <em>Cryptographic</em> screen change the hash algorithm from the <a href="https://konklone.com/post/why-google-is-hurrying-the-web-to-kill-sha-1">insecure sha1</a> to sha256 and click next.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-adcs-5.png" alt="Crypto Setup" /></p>
+
+<p>Leave the CA Name at the default and hit next, do the same with the validity period and database location.</p>
+
+<p>On the <em>Confirmation</em> screen make sure that everything is as it should be and then hit <em>Configure</em>.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-adcs-6.png" alt="Confirmation Screen" /></p>
+
+<p>After configuration completes hit close.</p>
+
+<h2 id="npas">NPAS</h2>
+
+<p>RADIUS is part of the <em>Network Policy</em> and <em>Access Services</em> role in Server 2008+ and is installed like the ADSC role.</p>
+
+<p>Go to the <em>Select Server Roles</em> screen and tick <em>Network Policy and Access Services</em>, agree to the required features and hit next.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-nps-1.png" alt="Select NPAS" /></p>
+
+<p>Hit next on the <em>Features</em> screen and again on the NPAS introduction.</p>
+
+<p>On the <em>Role Services</em> screen you only need <em>Network Policy Server</em> selected.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-nps-2.png" alt="NPS Role" /></p>
+
+<p>On the <em>Confirmation</em> screen hit Install.</p>
+
+<p>After the install finishes you can hit Close.</p>
+
+<p>Open <em>Network Policy Server</em> from the start menu and before you configure your RADIUS network right click <em>Templates Management -&gt; Shared Secrets</em> and select <em>New</em>.</p>
+
+<p>Give your Key a name and either type in or generate a secret.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-nps-3-a.png" alt="Set the Key Name" /></p>
+
+<p>At this point I normally go into my Wireless system and create the new RADIUS network whilst I have my generated key in the clipboard.</p>
+
+<p>With that template created head back to the main NPS screen and select RADIUS server for <em>802.1X Wireless or Wired Connections</em> and click <em>Configure 802.1X</em> under it.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-nps-3.png" alt="NPS Screen" /></p>
+
+<p>Select <em>Secure Wireless Connections</em> and click next (you can change the name if you want to).</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-nps-4.png" alt="Create Network" /></p>
+
+<p>You need to add each access point to the list which can be pretty tedious.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-nps-5.png" alt="Adding Clients" /></p>
+
+<p>When adding an AP select the shared secret template we made earlier. Once you have added all your access points hit next.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-nps-6.png" alt="Add Client" /></p>
+
+<p>On the <em>Configure an Authentication Method</em> screen select <em>Microsoft: Protected EAP (PEAP)</em> and click <em>Configure</em>.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-nps-7.png" alt="Set the authentication method" /></p>
+
+<p>Change to the certificate for your DC, <em>dc.domain.local</em> <strong>NOT</strong> <em>domain-dc-ca</em>.</p>
+
+<p><img src="/assets/2016/07/radius-with-windows-server-2012r2/radius-nps-8.png" alt="EAP Properties" /></p>
+
+<p>On the <em>Specify User Groups</em> screen add your <em>Domain Users</em> and <em>Domain Computers</em> groups and click next.</p>
+
+<p>Click next on the <em>Configure Traffic Controls</em> screen.</p>
+
+<p>On the last screen confirm all the details and then hit finish.</p>
+
+<h2 id="done">Done</h2>
+
+<p>You now have a RADIUS a network! Domain joined computers can now connect with seemingly no password as their computer account allows them to authenticate. None domain devices can authenticate with any user account.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

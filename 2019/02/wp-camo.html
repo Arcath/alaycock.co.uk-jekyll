@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>WP-Camo</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">WP-Camo</h1>
+  <ul class="flex gap-2">
+    <li>27 February 2019</li>
+    
+      <li><a href="/tag/wordpress">#wordpress</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>WP-Camo is a WordPress plugin I wrote for <a href="https://www.ed-itsolutions.com">Ed-IT Solutions</a>. It was designed to fix 2 issues we had with the WordPress sites that we where building.</p>
+
+<h2 id="mixed-content-errors">Mixed Content Errors</h2>
+
+<p>We use HTTPS for all the sites that we host. This gives us all the security and privacy of HTTPS as well as letting us get better performance through http/2.</p>
+
+<p>Our issue here was with hotlinking resources from other sites. I make sure that any off-domain resources used in themes and plugins are loaded over https but when the user is adding content to the site is another matter.</p>
+
+<p>A common issue I’ve had is with <em>badges</em> that the clients want on pages of thier sites. <em>It’s easy</em>, the badge owner will proclaim, <em>just put this code on your page</em>. Cue the site loading <em>http://somegroup/logo.jpg</em> to a mixed content error.</p>
+
+<p>Long term I will come along and download, upload and relink the image so its hosted on server with the site but in the short term I’d like the site to not throw mixed content errors at the users trying to see it.</p>
+
+<h2 id="bypassing-filtering">Bypassing Filtering</h2>
+
+<p>Our other big niggle was with images on un-trusted sites. Mainly Facebook, which in schools is blocked for all pupils and most staff. We had these big <em>holes</em> in the layout where images from the Facebook feed should be.</p>
+
+<p>We can’t ask schools to unblock Facebook so that thier sites look right and I didn’t want to have the themes do error detection and swap out the image etc…</p>
+
+<p>THe only solution I could come up with was the proxy the images through the site so that instead of https://fbcdn.com/someimage.jpg its https://www.school.county.sch.uk/wp-content/wp-camo/hash.jpg which is an allowed URL.</p>
+
+<p>This is similar to how GitHub handles images using <a href="https://github.com/atmos/camo">camo</a>.</p>
+
+<h2 id="wp-camo">WP-Camo</h2>
+
+<p>WP-Camo does everything we need it to and does it without any noticable performance loss.</p>
+
+<p>As of 1.0.0 instead of proxying the request on demand like camo does, WP-Camo now does all the work during the <code class="language-plaintext highlighter-rouge">apply_filters</code> call. WP-Camo requests the image and saves it into the <code class="language-plaintext highlighter-rouge">wp-content/uploads/wp-camo</code> directory and returns that URL from the filter.</p>
+
+<p>One of the great features of WordPress’ filters is that if there are no filters for the given name the original data is returned. This lets us use the WP-Camo filter everywhere we might need it without having to worry that the clients site might not have the WP-Camo plugin installed.</p>
+
+<p>WP-Camo’s source is available on <a href="https://github.com/Ed-ITSolutions/wp-camo">GitHub</a> and you can grab a copy of the plugin from the <a href="https://wordpress.org/plugins/wp-camo/#description">plugin directory</a>.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>OSTicket API Proxy</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">OSTicket API Proxy</h1>
+  <ul class="flex gap-2">
+    <li>22 November 2016</li>
+    
+      <li><a href="/tag/php">#php</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>Over at Ed-IT Solutions we use OSTicket for our help desk. We like it and it does its job very well. Early in the development of our <a href="/2016/11/electron-app-customer-support/">support app</a>, the question was asked, “Can users open tickets from inside the app?”. Yes! They can, but some trickery is going to be needed to get it working. OSTicket has this odd restriction that every API key needs to be assigned to one IP and one IP only. Hence the need for an OSTicket API Proxy. Our app is on hundreds of computers on various ISPs, on laptops that travel all over the place. A single IP does not exist.</p>
+
+<p>The answer is to proxy the API requests through another API.</p>
+
+<h2 id="setup">Setup</h2>
+
+<p>Create an API key on your OSTicket for the IP of your web server. Upload this file to your web server.</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="nv">$config</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span>
+  <span class="s1">'url'</span><span class="o">=&gt;</span><span class="s1">'https:/yoursite.com/api/tickets.json'</span><span class="p">,</span>
+	<span class="s1">'key'</span><span class="o">=&gt;</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">'apiKey'</span><span class="p">]</span>
+<span class="p">);</span>
+
+<span class="nv">$data</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span>
+	<span class="s1">'name'</span>      <span class="o">=&gt;</span>      <span class="nv">$_POST</span><span class="p">[</span><span class="s1">'name'</span><span class="p">],</span>
+  <span class="s1">'email'</span>     <span class="o">=&gt;</span>      <span class="nv">$_POST</span><span class="p">[</span><span class="s1">'email'</span><span class="p">],</span>
+  <span class="s1">'subject'</span>   <span class="o">=&gt;</span>      <span class="nv">$_POST</span><span class="p">[</span><span class="s1">'subject'</span><span class="p">],</span>
+  <span class="s1">'message'</span>   <span class="o">=&gt;</span>      <span class="nv">$_POST</span><span class="p">[</span><span class="s1">'message'</span><span class="p">],</span>
+  <span class="s1">'ip'</span>        <span class="o">=&gt;</span>      <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">'REMOTE_ADDR'</span><span class="p">],</span>
+	<span class="s1">'topicId'</span>   <span class="o">=&gt;</span>      <span class="s1">'19'</span> <span class="c1">// Change to the id of your default topic.</span>
+<span class="p">);</span>
+<span class="nb">set_time_limit</span><span class="p">(</span><span class="mi">30</span><span class="p">);</span>
+<span class="nv">$options</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span>
+  <span class="s1">'http'</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span>
+    <span class="s1">'header'</span>  <span class="o">=&gt;</span> <span class="s2">"X_API_Key: "</span><span class="mf">.</span><span class="nv">$config</span><span class="p">[</span><span class="s1">'key'</span><span class="p">],</span>
+    <span class="s1">'method'</span>  <span class="o">=&gt;</span> <span class="s1">'POST'</span><span class="p">,</span>
+		<span class="s1">'content'</span> <span class="o">=&gt;</span> <span class="nb">json_encode</span><span class="p">(</span><span class="nv">$data</span><span class="p">)</span>
+   <span class="p">)</span>
+<span class="p">);</span>
+<span class="nv">$context</span>  <span class="o">=</span> <span class="nb">stream_context_create</span><span class="p">(</span><span class="nv">$options</span><span class="p">);</span>
+<span class="nv">$result</span> <span class="o">=</span> <span class="nb">file_get_contents</span><span class="p">(</span><span class="nv">$config</span><span class="p">[</span><span class="s1">'url'</span><span class="p">],</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">$context</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$result</span> <span class="o">===</span> <span class="kc">FALSE</span><span class="p">)</span> <span class="p">{</span> <span class="k">die</span><span class="p">(</span><span class="s2">"FAILED"</span><span class="p">);</span> <span class="p">}</span>
+<span class="k">echo</span><span class="p">(</span><span class="nv">$result</span><span class="p">);</span>
+<span class="cp">?&gt;</span>
+</code></pre></div></div>
+
+<p>The topic ID needs changing to the ID of one of your topics. We have everything come into a generic support topic which we categorize after we read it.</p>
+
+<h2 id="using-osticket-api-proxy">Using OSTicket API Proxy</h2>
+
+<p>To create a ticket send a POST request to the address of the API file from above. Your post data need to contain:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">apiKey</code> – The osTicket API Key, this means you still need the API key in each client.</li>
+  <li><code class="language-plaintext highlighter-rouge">name</code> – The name of the user</li>
+  <li><code class="language-plaintext highlighter-rouge">email</code> – The user’s email address</li>
+  <li><code class="language-plaintext highlighter-rouge">subject</code> – The tickets subject</li>
+  <li><code class="language-plaintext highlighter-rouge">message</code> – The tickets message</li>
+</ul>
+
+<p>I specifically wanted my clients to require the API Key, this stops an attacker finding your API Proxies address and sending thousands of tickets through it.</p>
+
+<p>The API proxy returns the response from OSTicket or <em>Failed</em> if there was a problem making the request to OSTicket.</p>
+
+<p>We have been using this quite successfully for a couple of weeks now and I am pretty happy with it. It would be possible to move the topic ID into your post data if you want that selection to be made by the user in your app.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

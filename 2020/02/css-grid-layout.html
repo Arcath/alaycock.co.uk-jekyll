@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CSS Grid Layout</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">CSS Grid Layout</h1>
+  <ul class="flex gap-2">
+    <li>20 February 2020</li>
+    
+      <li><a href="/tag/css">#css</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>I’ve been doing a fair bit of reading on CSS Grid recently and I’m conviced its magic.</p>
+
+<p>I’ve re-styled this site to use a grid layout which has almost completely removed the need for breakpoints.</p>
+
+<p>The main article layout came from <a href="https://gedd.ski/post/article-grid-layout/">Dave Geddes’ article</a> although I have put my own spin on it. Where as his system had 3 columns mine has 5.</p>
+
+<table>
+<thead>
+<tr>
+<th>0.6rem, 1fr</th>
+<th>0.6rem, 1fr</th>
+<th>auto, 80ch</th>
+<th>0.6rem, 1fr</th>
+<th>0.6rem, 1fr</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td>Paragraphs &amp; headings</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td colspan="3">Tables &amp; Code Content</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="5">Images</td>
+</tr>
+</tbody>
+</table>
+
+<p>The extra columns allow content like tables, like the one above, to expand outside the normal article width without making them the full page width. Images take up as much width as they need upto the full page width. The code container takes the full width keeping its content at the central 3 columns.</p>
+
+<p>The header, footer and the none markdown content like article lists and the home page expand to the width of tables. I felt that this was the best width for this content. The central columns width is a bit too small to be displaying lists of articles etc… and the central 3 columns give a nice way to have everything in line.</p>
+
+<p>These are all the grids I created to display the site.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">export</span> <span class="kd">const</span> <span class="nx">Grid</span> <span class="o">=</span> <span class="nx">styled</span><span class="p">.</span><span class="nx">div</span><span class="s2">`
+  font-size:1.2rem;
+  display:grid;
+  grid-template-columns:
+    minmax(0.6rem, 1fr)
+    minmax(0.6rem, 1fr)
+    minmax(auto, 60ch)
+    minmax(0.6rem, 1fr)
+    minmax(0.6rem, 1fr)
+  ;
+`</span>
+
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">BoxGrid</span> <span class="o">=</span> <span class="nx">styled</span><span class="p">.</span><span class="nx">div</span><span class="o">&lt;</span><span class="p">{</span><span class="na">targetWidth</span><span class="p">:</span> <span class="kr">number</span><span class="p">}</span><span class="o">&gt;</span><span class="s2">`
+  </span><span class="p">${({</span><span class="nx">targetWidth</span><span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="s2">`
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(</span><span class="p">${</span><span class="nx">targetWidth</span><span class="p">}</span><span class="s2">px, 1fr));
+      grid-gap:10px;
+    `</span>
+  <span class="p">}}</span><span class="s2">
+`</span>
+
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">WideGrid</span> <span class="o">=</span> <span class="nf">styled</span><span class="p">(</span><span class="nx">Grid</span><span class="p">)</span><span class="o">&lt;</span><span class="p">{</span><span class="nx">wideHeading</span><span class="p">?:</span> <span class="nx">boolean</span><span class="p">}</span><span class="o">&gt;</span><span class="s2">`
+  h2{
+    grid-column:</span><span class="p">${({</span><span class="nx">wideHeading</span><span class="p">})</span> <span class="o">=&gt;</span> <span class="nx">wideHeading</span> <span class="p">?</span> <span class="dl">'</span><span class="s1">2/5</span><span class="dl">'</span> <span class="p">:</span> <span class="dl">'</span><span class="s1">3</span><span class="dl">'</span><span class="p">}</span><span class="s2">;
+  }
+
+  &amp; &gt; div{
+    grid-column:2/5;
+  }
+`</span>
+
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">ArticleGrid</span> <span class="o">=</span> <span class="nf">styled</span><span class="p">(</span><span class="nx">Grid</span><span class="p">)</span><span class="s2">`
+  p, h1, h2, h3, h4, h5, h6, ul, ol, div, blockquote{
+    grid-column: 3;
+  }
+
+  table{
+    grid-column: 2 / 5;
+  }
+
+  p.full-width{
+    grid-column 1 / 6;
+  }
+
+  img{
+    grid-column 1 / 6;
+  }
+
+  div.gatsby-highlight{
+    grid-column: 1 / 6;
+
+    pre{
+      display:grid;
+      grid-template-columns:
+        minmax(0.6rem, 1fr)
+        minmax(auto, 90ch)
+        minmax(0.6rem, 1fr)
+      ;
+      }
+
+      code{
+        grid-column:2;
+      }
+  }
+`</span>
+
+<span class="k">export</span> <span class="kd">const</span> <span class="nx">ArticleListGrid</span> <span class="o">=</span> <span class="nx">styled</span><span class="p">.</span><span class="nx">div</span><span class="s2">`
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-gap:10px;
+  width:100%;
+`</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">ArticleGrid</code> was the hardest to get working as I wanted. Remark was outputting images wrapped in <code class="language-plaintext highlighter-rouge">p</code> tags which wasn’t helping style them properly. To fix this I needed to tweak the way <a href="/2019/05/using-htmr-to-bring-life-to-links-in-gatsby">htmr modifies the content</a>. The trick here was to inspect the <code class="language-plaintext highlighter-rouge">p</code> tag it was creating and if its only got a single <code class="language-plaintext highlighter-rouge">img</code> as a child it adds the <code class="language-plaintext highlighter-rouge">full-width</code> class.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="nl">p</span><span class="p">:</span> <span class="p">(</span><span class="nx">node</span><span class="p">:</span> <span class="nb">Partial</span><span class="o">&lt;</span><span class="nx">ReactHTMLElement</span><span class="o">&lt;</span><span class="nx">HTMLParagraphElement</span><span class="o">&gt;</span><span class="p">[</span><span class="dl">"</span><span class="s2">props</span><span class="dl">"</span><span class="p">]</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="kd">let</span> <span class="nx">className</span> <span class="o">=</span> <span class="dl">''</span>
+
+      <span class="k">if</span><span class="p">((</span><span class="nx">node</span><span class="p">.</span><span class="nx">children</span><span class="o">!</span> <span class="k">as</span> <span class="kr">any</span><span class="p">).</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="k">typeof </span><span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">children</span><span class="o">!</span> <span class="k">as</span> <span class="kr">any</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">object</span><span class="dl">'</span><span class="p">){</span>
+        <span class="nx">className</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">full-width</span><span class="dl">"</span>
+      <span class="p">}</span>
+
+      <span class="k">return</span> <span class="o">&lt;</span><span class="nx">p</span> <span class="p">{...</span><span class="nx">node</span><span class="p">}</span> <span class="nx">className</span><span class="o">=</span><span class="p">{</span><span class="nx">className</span><span class="p">}</span> <span class="sr">/</span><span class="err">&gt;
+</span>    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Overall I’m very happy with how the site is looking CSS grid has been a great addition. The grid has made keeping everything in line so easy. I’ve deleted quite a few <code class="language-plaintext highlighter-rouge">calc</code>s that involved adding the padding and margin widths to try and work out where to place an edge.</p>
+
+<p>Dave Geddes’ blog has a few more posts <a href="https://gedd.ski/post/tile-layouts/">on CSS grid</a> that are well worth a read and really helped get this site looking as good as it does now.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

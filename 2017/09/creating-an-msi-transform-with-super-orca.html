@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Creating an MSI Transform with Super Orca</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Creating an MSI Transform with Super Orca</h1>
+  <ul class="flex gap-2">
+    <li>07 September 2017</li>
+    
+      <li><a href="/tag/deployments">#deployments</a></li>
+    
+      <li><a href="/tag/group-policy">#group-policy</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>I quite frequently deploy software that needs config changes or options before it will work properly. MSI deployments can be given a transform file which modifies the options used when it is installed.</p>
+
+<p>This can be very useful for adding in serial keys or changing the install folder etc… Most MSIs don’t come with a utility to create these transforms or even any documentation as to what options they support. It can be a bit hit and miss finding the options you need to change.</p>
+
+<p>I have to create the transform for <a href="https://www.airserver.com/">AirServer</a> that sets the product key and disables the auto updater.</p>
+
+<h2 id="superorca">SuperOrca</h2>
+
+<p>Super Orca lets you edit the values in an MSI among other things. You can grab a copy of SuperOrca <a href="http://www.pantaray.com/msi_super_orca.html">here</a>. Once it’s installed it should appear in your start menu.</p>
+
+<h2 id="making-your-edits">Making your edits</h2>
+
+<blockquote>
+  <p>You must make a copy of your MSI to work on. SuperOrca write changes immediatley and will leave you with no un modified msi to compare to</p>
+</blockquote>
+
+<p>For AirServer I need to make 3 edits</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Table</th>
+      <th>Property</th>
+      <th>Value</th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>PROPERTY</td>
+      <td>PIDKEY</td>
+      <td>Your License Key</td>
+      <td>Sets the license key during install. If the machine can it will activate during install as well</td>
+    </tr>
+    <tr>
+      <td>PROPERTY</td>
+      <td>VAR_AUTOSTART</td>
+      <td>EVERYONE</td>
+      <td>Enables open on startup for all users</td>
+    </tr>
+    <tr>
+      <td>PROPERTY</td>
+      <td>CHECKFORUPDATES</td>
+      <td>DISABLE</td>
+      <td>Stops AirServer checking for updates. Useful if your users don’t have admin rights to the computer</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>With those edits in place confirm that the MSIs are different using <em>Tools -&gt; Compare MSI Files</em>.</p>
+
+<p>Set MSI File 2 to the original MSI and you should get a list of differences.</p>
+
+<p><img src="/assets/2017/09/creating-an-msi-transform-with-super-orca/msi-changes.png" alt="The MSI Changes" /></p>
+
+<h2 id="creating-the-transform">Creating the Transform</h2>
+
+<p>Go to <em>Tools -&gt; Transform</em> Two Files and you will get the transform generator.</p>
+
+<p>Set the <em>Base MSI</em> to the original MSI and <em>Modified MSI</em> to your edited version.</p>
+
+<p><img src="/assets/2017/09/creating-an-msi-transform-with-super-orca/create-a-transform.png" alt="Create the transform" /></p>
+
+<p>Hit <em>Create Transform</em> and save the MST in the same folder. Once it generates the MST it will pop up an OK box next to the MSI selector.</p>
+
+<h2 id="using-your-transform">Using your Transform</h2>
+
+<p>Now that you have your transform open up the Group Policy in which you want to deploy the MSI and go to software installations. Add the MSI to the deployment list making sure that you select <strong>Advanced</strong> for the deployment type.</p>
+
+<p><img src="/assets/2017/09/creating-an-msi-transform-with-super-orca/deploying-the-msi.png" alt="Deploying the MSI" /></p>
+
+<p>Go to the <strong>Modifications</strong> tab and add your transform file. Once you’ve added your transform hit OK and your MSI will be added.</p>
+
+<p>Restart the target computers and they will install your software with all the options you selected.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

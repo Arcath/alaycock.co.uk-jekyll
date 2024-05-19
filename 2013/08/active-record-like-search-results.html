@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Active Record like Search Results</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Active Record like Search Results</h1>
+  <ul class="flex gap-2">
+    <li>29 August 2013</li>
+    
+      <li><a href="/tag/ruby">#ruby</a></li>
+    
+      <li><a href="/tag/adauth">#adauth</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>Active Records output may look like an array but its actually a special class that behaves like an array but has a lot of extensions attached to it.</p>
+
+<p>For <a href="http://adauth.arcath.net/">Adauth</a> I want to provide results in something more than an array with the ability to order etc… but not over complicate things for the end user (if you just want an array you can still get it). So how do we make something like AR?</p>
+
+<p>So straight away lets create a new class that inherits from <code class="language-plaintext highlighter-rouge">Array</code> and to begin with it needs no extra methods because <code class="language-plaintext highlighter-rouge">Array.new</code> can take an array and obviosuly that will return our new object acting as an <code class="language-plaintext highlighter-rouge">Array</code>.</p>
+
+<p>This new class would look like this</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SearchResults</span> <span class="o">&lt;</span> <span class="no">Array</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>That now means that you can create your new class quickly from array returns by calling <code class="language-plaintext highlighter-rouge">SearchResults.new(SomeThing.query("foo"))</code> instead of just <code class="language-plaintext highlighter-rouge">SomeThing.query("foo")</code>.</p>
+
+<p>Now that we have our class lets start using it! First and easiest functionality is <code class="language-plaintext highlighter-rouge">limit(x)</code> which is pretty simple 1 line function</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">limit</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">self</span><span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This simply returns a new instance of self that is limited to the range of 0 to the supplied value.</p>
+
+<p>The next function to bring to the table is <code class="language-plaintext highlighter-rouge">order</code> which should take a couple of options e.g. <code class="language-plaintext highlighter-rouge">order(:name, :asc)</code> which should look something like this</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">direction</span>
+    <span class="k">when</span> <span class="ss">:asc</span>
+        <span class="k">return</span> <span class="n">sort!</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">|</span> <span class="n">x</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="o">&lt;=&gt;</span> <span class="n">y</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="p">}</span>
+    <span class="k">when</span> <span class="ss">:desc</span>
+        <span class="k">return</span> <span class="n">order</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="ss">:asc</span><span class="p">).</span><span class="nf">reverse!</span>
+    <span class="k">else</span>
+        <span class="k">raise</span> <span class="s2">"Invalid Order Provided, please use :asc or :desc"</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This assumes that your search results are objects with the data retrievable via methods but you can sort your objects how ever you want as long as they match what your user is asking for. The advantage to this setup is that your code becomes very “englishy” and is very easy to read.</p>
+
+<p>Taking my example from earlier of <code class="language-plaintext highlighter-rouge">SearchResults.new(SomeThing.query("foo"))</code> you can now:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">SearchResults</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">SomeThing</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="s2">"foo"</span><span class="p">)).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="no">SearchResults</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">SomeThing</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="s2">"foo"</span><span class="p">)).</span><span class="nf">order</span><span class="p">(</span><span class="ss">:age</span><span class="p">,</span> <span class="ss">:desc</span><span class="p">)</span>
+<span class="no">SearchResults</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">SomeThing</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="s2">"foo"</span><span class="p">)).</span><span class="nf">order</span><span class="p">(</span><span class="ss">:name</span><span class="p">,</span> <span class="ss">:asc</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Things look even nicer if your gem returns its data using your search results class as you wont need the <code class="language-plaintext highlighter-rouge">.new</code> so it looks like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">YourGem</span><span class="p">.</span><span class="nf">some_dataset</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">:name</span><span class="p">,</span> <span class="ss">:asc</span><span class="p">)</span>
+<span class="no">YourGem</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The rest of the <code class="language-plaintext highlighter-rouge">Array</code> methods are still there and will function exactly the same.</p>
+
+<p><em>Be warned, any none destructive methods (no !) will return a new Array not a new SearchResults</em></p>
+
+<p>The finished class would look like this</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SearchResults</span> <span class="o">&lt;</span> <span class="no">Array</span>
+    <span class="k">def</span> <span class="nf">limit</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">self</span><span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+        <span class="k">case</span> <span class="n">direction</span>
+            <span class="k">when</span> <span class="ss">:asc</span>
+                <span class="k">return</span> <span class="n">sort!</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">|</span> <span class="n">x</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="o">&lt;=&gt;</span> <span class="n">y</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="p">}</span>
+            <span class="k">when</span> <span class="ss">:desc</span>
+                <span class="k">return</span> <span class="n">order</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="ss">:asc</span><span class="p">).</span><span class="nf">reverse!</span>
+        <span class="k">else</span>
+            <span class="k">raise</span> <span class="s2">"Invalid Order Provided, please use :asc or :desc"</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Hardly a huge class is it? This is a little rough around the edges but it serves its purpose and when combined with AR like search methods will be incredibly easy to read and use.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

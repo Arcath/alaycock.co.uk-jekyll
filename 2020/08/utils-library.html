@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Write a Utils Library</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Write a Utils Library</h1>
+  <ul class="flex gap-2">
+    <li>28 August 2020</li>
+    
+      <li><a href="/tag/typescript">#typescript</a></li>
+    
+      <li><a href="/tag/node">#node</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>If you <a href="https://github.com/Arcath">follow me on GitHub</a> you may have seen that one of the repositories that I commit to on a semi regular basis is <a href="https://github.com/Arcath/utils">Arcath/utils</a>. This isn’t the only thing I work on but it is the only bit of at-work code that enters the public domain.</p>
+
+<p>Now you might be thinking <em>why do we need yet another utils library?</em> and you’d be right, we don’t need another utils library but I wrote one to practice and craft functions that work better for me.</p>
+
+<p>I don’t expect or have any designs on <code class="language-plaintext highlighter-rouge">@arcath/utils</code> becoming an always installed package for anyone other than myself. If it saves anyone time then great I’m glad I shared it but that was never the aim.</p>
+
+<p>I started my own uitls library for a few reasons:</p>
+
+<ol>
+  <li>I needed some more esoteric functions that where too small for their own package but I still needed them in multiple codebases. (e.g. <a href="https://utils.arcath.net/globals.html#rangeasstring">rangeAsString</a>)</li>
+  <li>I needed to type some functions better. (e.g. <a href="https://utils.arcath.net/globals.html#mapproperty">mapProperty</a>)</li>
+  <li>I wanted to test functions more thoroughly than I could if it was within a bigger project.</li>
+</ol>
+
+<p>It’s been quite nice writing functions in a self contained format and focusing on small tasks. The feedback loop on getting them working is really quick and I’m really happy with the way they work.</p>
+
+<p>I’ll admit that some of them got used once and never again, the need for some have even been refactored out of the app I wrote them for but again the practice from writing them was good and I have them if I ever need them again I have them.</p>
+
+<p>They are fully documented through TypeDoc at https://utils.arcath.net if anyone wants to use them.</p>
+
+<p>I would reccomend that everyone build a utils library you don’t have to release it publically but it is something I’ve found very helpful. I’ve enjoyed doing all the testing, documenting and design without any pressure.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

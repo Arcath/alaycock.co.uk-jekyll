@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>AJAX Page loading in Jekyll (Or any static site)</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">AJAX Page loading in Jekyll (Or any static site)</h1>
+  <ul class="flex gap-2">
+    <li>04 February 2016</li>
+    
+      <li><a href="/tag/jekyll">#jekyll</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>This site is pretty fast, lets be honest static HTML loads incredibly quickly as there is no rendering or database overheads to slow it down. That being said AJAX page loading is even faster so can it be done without the use of HTTP headers etc…?</p>
+
+<p>Yes it can, quite easily, I spent more time working on getting Disqus and Google Analytics working again.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nf">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">ready</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="nf">bindLinks</span><span class="p">()</span>
+<span class="p">})</span>
+
+<span class="nf">$</span><span class="p">(</span><span class="nb">window</span><span class="p">).</span><span class="nf">on</span><span class="p">(</span><span class="dl">"</span><span class="s2">popstate</span><span class="dl">"</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// When the browser goes back replace the content and title</span>
+    <span class="nf">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">title</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">originalEvent</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">title</span><span class="p">)</span>
+    <span class="nf">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">#content</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">originalEvent</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">content</span><span class="p">)</span>
+<span class="p">})</span>
+
+<span class="kd">function</span> <span class="nf">bindLinks</span><span class="p">(){</span>
+    <span class="nf">$</span><span class="p">(</span><span class="dl">"</span><span class="s2">a[href^='/']</span><span class="dl">"</span><span class="p">).</span><span class="nf">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">click</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">){</span>
+        <span class="c1">// Stop link from activating</span>
+        <span class="nx">e</span><span class="p">.</span><span class="nf">preventDefault</span><span class="p">()</span>
+
+        <span class="c1">// Get the URL to load</span>
+        <span class="nx">url</span> <span class="o">=</span> <span class="nf">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nf">attr</span><span class="p">(</span><span class="dl">'</span><span class="s1">href</span><span class="dl">'</span><span class="p">)</span>
+
+        <span class="c1">// Send a Get request to the URL</span>
+        <span class="nx">$</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="nx">url</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
+            <span class="c1">// Get the title of the new page</span>
+            <span class="nx">regex</span> <span class="o">=</span> <span class="sr">/&lt;title&gt;</span><span class="se">(</span><span class="sr">.*</span><span class="se">)</span><span class="sr">&lt;</span><span class="se">\/</span><span class="sr">title&gt;/g</span>
+            <span class="nx">newTitle</span> <span class="o">=</span> <span class="nx">regex</span><span class="p">.</span><span class="nf">exec</span><span class="p">(</span><span class="nx">data</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1">// Set the title to the new title</span>
+            <span class="nf">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">title</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">(</span><span class="nx">newTitle</span><span class="p">)</span>
+
+            <span class="c1">// Replace the content</span>
+            <span class="nf">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">#content</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">(</span><span class="nf">$</span><span class="p">(</span><span class="nx">data</span><span class="p">).</span><span class="nf">find</span><span class="p">(</span><span class="dl">'</span><span class="s1">#content</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">())</span>
+
+            <span class="c1">// Push a new state to the browser</span>
+            <span class="nx">history</span><span class="p">.</span><span class="nf">pushState</span><span class="p">({</span>
+                <span class="dl">'</span><span class="s1">title</span><span class="dl">'</span><span class="p">:</span> <span class="nf">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">title</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">(),</span>
+                <span class="dl">'</span><span class="s1">content</span><span class="dl">'</span><span class="p">:</span> <span class="nf">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">#content</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">()</span>
+            <span class="p">},</span> <span class="nx">newTitle</span><span class="p">,</span> <span class="nx">url</span><span class="p">)</span>
+
+            <span class="c1">// Re Bind to all the links on the page</span>
+            <span class="nf">bindLinks</span><span class="p">()</span>
+        <span class="p">})</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Not much code there is there. So how does it work?</p>
+
+<p>First off in the <em>documents</em> ready event the function <code class="language-plaintext highlighter-rouge">bindLinks</code> gets run which is just to start the process off.</p>
+
+<p>The only part of the function is an event binding for all internal links which in turn starts with a call to <code class="language-plaintext highlighter-rouge">e.preventDefault()</code> to stop the links from being handled by the browser. Next we get the target url from the links <code class="language-plaintext highlighter-rouge">href</code> attribute and send off a get request to it.</p>
+
+<p>The callback for the get request is passed a string containing the HTML for the page which can be passed into jQuery and used like the normal DOM. In Theory… jQuery has some issues around the root node being html/head/body which means you cant just use <code class="language-plaintext highlighter-rouge">$(data).find('title')</code> to get the title of the new page. In light of this I had to use regex to pull the title out of the received code. My content is 2 layers into divs which lets me fetch it quite nicely with <code class="language-plaintext highlighter-rouge">$(data).find('#content').html()</code> making the replace nice and easy.</p>
+
+<p>Then <code class="language-plaintext highlighter-rouge">history.pushState</code> tells the browser the new pages URL and title. Lastly <code class="language-plaintext highlighter-rouge">bindLinks</code> is called again to bind to the links inside #content and that is it!</p>
+
+<p>The code in use on this site is slightly different, I added <a href="http://ricostacruz.com/nprogress/">NProgress</a> to give some feedback to the user that loading is taking place. I also needed to update Google Analytics with the fact that the user has changed page. Lastly <a href="https://disqus.com/">Disqus</a> needed to be reset if you opened a second post (which I hope you do).</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nf">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">ready</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="nf">bindLinks</span><span class="p">()</span>
+<span class="p">})</span>
+
+<span class="nf">$</span><span class="p">(</span><span class="nb">window</span><span class="p">).</span><span class="nf">on</span><span class="p">(</span><span class="dl">"</span><span class="s2">popstate</span><span class="dl">"</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">NProgress</span><span class="p">.</span><span class="nf">start</span><span class="p">()</span>
+    <span class="nf">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">title</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">originalEvent</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">title</span><span class="p">)</span>
+    <span class="nf">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">#content</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">originalEvent</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">content</span><span class="p">)</span>
+    <span class="nf">updateExternals</span><span class="p">()</span>
+    <span class="nf">bindLinks</span><span class="p">()</span>
+    <span class="nx">NProgress</span><span class="p">.</span><span class="nf">done</span><span class="p">()</span>
+<span class="p">})</span>
+
+<span class="kd">function</span> <span class="nf">bindLinks</span><span class="p">(){</span>
+    <span class="nf">$</span><span class="p">(</span><span class="dl">"</span><span class="s2">a[href^='/']</span><span class="dl">"</span><span class="p">).</span><span class="nf">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">click</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">){</span>
+        <span class="c1">// Stop link from activating</span>
+        <span class="nx">e</span><span class="p">.</span><span class="nf">preventDefault</span><span class="p">()</span>
+
+        <span class="c1">// Start the NProgress bar</span>
+        <span class="nx">NProgress</span><span class="p">.</span><span class="nf">start</span><span class="p">()</span>
+
+        <span class="c1">// Get the URL to load</span>
+        <span class="nx">url</span> <span class="o">=</span> <span class="nf">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nf">attr</span><span class="p">(</span><span class="dl">'</span><span class="s1">href</span><span class="dl">'</span><span class="p">)</span>
+
+        <span class="c1">// Send a Get request to the URL</span>
+        <span class="nx">$</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="nx">url</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
+            <span class="c1">// Get the title of the new page</span>
+            <span class="nx">regex</span> <span class="o">=</span> <span class="sr">/&lt;title&gt;</span><span class="se">(</span><span class="sr">.*</span><span class="se">)</span><span class="sr">&lt;</span><span class="se">\/</span><span class="sr">title&gt;/g</span>
+            <span class="nx">newTitle</span> <span class="o">=</span> <span class="nx">regex</span><span class="p">.</span><span class="nf">exec</span><span class="p">(</span><span class="nx">data</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1">// Set the title to the new title</span>
+            <span class="nf">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">title</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">(</span><span class="nx">newTitle</span><span class="p">)</span>
+
+            <span class="c1">// Replace the content</span>
+            <span class="nf">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">#content</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">(</span><span class="nf">$</span><span class="p">(</span><span class="nx">data</span><span class="p">).</span><span class="nf">find</span><span class="p">(</span><span class="dl">'</span><span class="s1">#content</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">())</span>
+
+            <span class="c1">// Push a new state to the browser</span>
+            <span class="nx">history</span><span class="p">.</span><span class="nf">pushState</span><span class="p">({</span>
+                <span class="dl">'</span><span class="s1">title</span><span class="dl">'</span><span class="p">:</span> <span class="nf">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">title</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">(),</span>
+                <span class="dl">'</span><span class="s1">content</span><span class="dl">'</span><span class="p">:</span> <span class="nf">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">#content</span><span class="dl">'</span><span class="p">).</span><span class="nf">html</span><span class="p">()</span>
+            <span class="p">},</span> <span class="nx">newTitle</span><span class="p">,</span> <span class="nx">url</span><span class="p">)</span>
+
+            <span class="nf">updateExternals</span><span class="p">()</span>
+
+            <span class="c1">// Make NProgress finish</span>
+            <span class="nx">NProgress</span><span class="p">.</span><span class="nf">done</span><span class="p">()</span>
+
+            <span class="c1">// Re Bind to all the links on the page</span>
+            <span class="nf">bindLinks</span><span class="p">()</span>
+        <span class="p">})</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nf">updateExternals</span><span class="p">(){</span>
+    <span class="c1">// Update Google Analytics</span>
+    <span class="nf">ga</span><span class="p">(</span><span class="dl">'</span><span class="s1">set</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">location</span><span class="dl">'</span><span class="p">,</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="p">);</span>
+    <span class="nf">ga</span><span class="p">(</span><span class="dl">'</span><span class="s1">send</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">pageview</span><span class="dl">'</span><span class="p">);</span>
+
+    <span class="c1">// Update disqus</span>
+    <span class="c1">// If there is a disqus_thread on the page?</span>
+    <span class="k">if</span><span class="p">(</span><span class="nf">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">#disqus_thread</span><span class="dl">'</span><span class="p">).</span><span class="nx">length</span> <span class="o">!==</span> <span class="mi">0</span><span class="p">){</span>
+        <span class="c1">// Has Disqus been loaded before</span>
+        <span class="k">if </span><span class="p">(</span><span class="dl">'</span><span class="s1">undefined</span><span class="dl">'</span> <span class="o">!==</span> <span class="k">typeof</span> <span class="nx">DISQUS</span><span class="p">){</span>
+            <span class="c1">// Reset Disqus</span>
+            <span class="nx">DISQUS</span><span class="p">.</span><span class="nf">reset</span><span class="p">({</span>
+                <span class="na">reload</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+                <span class="na">config</span><span class="p">:</span> <span class="nf">function </span><span class="p">()</span> <span class="p">{</span>
+                    <span class="k">this</span><span class="p">.</span><span class="nx">page</span><span class="p">.</span><span class="nx">identifier</span> <span class="o">=</span> <span class="nx">disqus_identifier</span>
+                    <span class="k">this</span><span class="p">.</span><span class="nx">page</span><span class="p">.</span><span class="nx">url</span> <span class="o">=</span> <span class="nx">disqus_url</span>
+                <span class="p">}</span>
+            <span class="p">});</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>This effect is pretty cool and does speed up navigating my site a bit on Github Pages but mostly it just looks cool.</p>
+
+<blockquote>
+  <p>Revised 25/2/16 to include popstate support fixing an issue with going back</p>
+</blockquote>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

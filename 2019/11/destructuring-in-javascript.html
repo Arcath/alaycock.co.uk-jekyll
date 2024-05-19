@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Destructuring in JavaScript</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Destructuring in JavaScript</h1>
+  <ul class="flex gap-2">
+    <li>25 November 2019</li>
+    
+      <li><a href="/tag/typescript">#typescript</a></li>
+    
+      <li><a href="/tag/javascript">#javascript</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>Destructuring allows you to assign values to variables in a quick shorthand instead of having multiple lines. I use it pretty much every day but I can’t remember a time when I actually learned anything about it, it just kind of appeared in my code and I’ve used it ever since.</p>
+
+<p>A prime example of its use in the wild is React, take this function component.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">MyComponent</span><span class="p">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">FC</span><span class="o">&lt;</span><span class="p">{</span><span class="na">startCount</span><span class="p">:</span> <span class="kr">number</span><span class="p">}</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">({</span><span class="nx">startCount</span><span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="p">[</span><span class="nx">count</span><span class="p">,</span> <span class="nx">setCount</span><span class="p">]</span> <span class="o">=</span> <span class="nf">useState</span><span class="p">(</span><span class="nx">startCount</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="nf">setCount</span><span class="p">(</span><span class="nx">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)}</span><span class="o">&gt;</span><span class="nc">Count </span><span class="p">({</span><span class="nx">count</span><span class="p">})</span><span class="o">&lt;</span><span class="sr">/button</span><span class="err">&gt;
+</span><span class="p">}</span>
+</code></pre></div></div>
+
+<p>Without destructuring, it would look like this.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">MyComponent</span><span class="p">:</span> <span class="nx">React</span><span class="p">.</span><span class="nx">FC</span><span class="o">&lt;</span><span class="p">{</span><span class="na">startCount</span><span class="p">:</span> <span class="kr">number</span><span class="p">}</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">(</span><span class="nx">props</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">countState</span> <span class="o">=</span> <span class="nf">useState</span><span class="p">(</span><span class="nx">props</span><span class="p">.</span><span class="nx">startCount</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="nx">countState</span><span class="p">[</span><span class="mi">1</span><span class="p">](</span><span class="nx">countState</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)}</span><span class="o">&gt;</span><span class="nc">Count </span><span class="p">({</span><span class="nx">countState</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span><span class="o">&lt;</span><span class="sr">/button</span><span class="err">&gt;
+</span><span class="p">}</span>
+</code></pre></div></div>
+
+<p>Both types of destructuing occur in this example so lets take a look at them.</p>
+
+<h2 id="array-destructuring">Array Destructuring</h2>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">array</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span>
+
+<span class="kd">const</span> <span class="p">[</span><span class="nx">c1</span><span class="p">,</span> <span class="nx">c2</span><span class="p">,</span> <span class="nx">c3</span><span class="p">]</span> <span class="o">=</span> <span class="nx">array</span>
+
+<span class="nx">c1</span> <span class="c1">// 1</span>
+<span class="nx">c2</span> <span class="c1">// 2</span>
+<span class="nx">c3</span> <span class="c1">// 3</span>
+</code></pre></div></div>
+
+<p>With Array Destructuring you are taking the elements in the array and assigning them to variables, as a result the order of variable names is important.</p>
+
+<p>This is how React’s <code class="language-plaintext highlighter-rouge">useState</code> works and it is used here because the React developers that wrote <code class="language-plaintext highlighter-rouge">useState</code> have no idea what the names you want to use for the variables are.</p>
+
+<h2 id="object-destructuring">Object Destructuring</h2>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">author</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">age</span><span class="p">:</span> <span class="mi">29</span>
+  <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">adam</span><span class="dl">'</span>
+<span class="p">}</span>
+
+<span class="kd">const</span> <span class="p">{</span><span class="nx">age</span><span class="p">,</span> <span class="nx">name</span><span class="p">}</span> <span class="o">=</span> <span class="nx">author</span>
+
+<span class="nx">age</span> <span class="c1">// 29</span>
+<span class="nx">name</span> <span class="c1">// adam</span>
+</code></pre></div></div>
+
+<p>With Object destructuring the names of the object’s properties are important. The properties of the object become the variables that come out of the destructuring.</p>
+
+<p>Lets say <code class="language-plaintext highlighter-rouge">useState</code> actually returned an object of <code class="language-plaintext highlighter-rouge">{value: T, setValue: (newValue: T) =&gt; void}</code> we would have to assign those values as:</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="p">{</span><span class="nx">value</span><span class="p">,</span> <span class="nx">setValue</span><span class="p">}</span> <span class="o">=</span> <span class="nf">useState</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>As you can see its not very descriptive which is why the return value from <code class="language-plaintext highlighter-rouge">useState</code> is an array.</p>
+
+<p>You can assign different variable names to destructured properties but the process would be cumbersome if we had to do it for every <code class="language-plaintext highlighter-rouge">useState</code> call.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="p">{</span><span class="na">value</span><span class="p">:</span> <span class="nx">count</span><span class="p">,</span> <span class="na">setValue</span><span class="p">:</span> <span class="nx">setCount</span><span class="p">}</span> <span class="o">=</span> <span class="nf">useState</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="usequery-and-uselazyquery">useQuery and useLazyQuery</h2>
+
+<p>A great example of when/why you would use either return type is Apollo GraphQLs React Hooks of <code class="language-plaintext highlighter-rouge">useQuery</code> and <code class="language-plaintext highlighter-rouge">useLazyQuery</code>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">useQuery</code> runs the query the moment the component is mounted and returns an object. This is great as you usually only have one query per component, and if you have more you should really merge them or move the code into another component. This means at a minimum you are pulling <code class="language-plaintext highlighter-rouge">loading</code>, <code class="language-plaintext highlighter-rouge">error</code> and <code class="language-plaintext highlighter-rouge">data</code> from <code class="language-plaintext highlighter-rouge">useQuery</code>.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="p">{</span><span class="nx">loading</span><span class="p">,</span> <span class="nx">error</span><span class="p">,</span> <span class="nx">data</span><span class="p">}</span> <span class="o">=</span> <span class="nf">useQuery</span><span class="p">(</span><span class="nx">SOME_QUERY</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">useLazyQuery</code> on the other hand waits until it is called to run the query. To this end it returns an array the first element of which is the function to run the query and the second is the same return object as <code class="language-plaintext highlighter-rouge">useQuery</code> with an additional <code class="language-plaintext highlighter-rouge">called</code> property.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="p">[</span><span class="nx">getAuthors</span><span class="p">,</span> <span class="p">{</span><span class="nx">called</span><span class="p">,</span> <span class="nx">loading</span><span class="p">,</span> <span class="nx">error</span><span class="p">,</span> <span class="nx">data</span><span class="p">}]</span> <span class="o">=</span> <span class="nf">useLazyQuery</span><span class="p">(</span><span class="nx">AUTHOR_QUERY</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>I use destructring every day across all the code I write and it’s become my default way of working as I’m sure it has for a lot of my fellow developers. Hopefully this article gives everyone new and old to destructuing an idea of what is going on when you use it.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

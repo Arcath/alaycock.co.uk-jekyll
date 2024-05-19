@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Deploying Adobe Air and Air Apps</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Deploying Adobe Air and Air Apps</h1>
+  <ul class="flex gap-2">
+    <li>12 February 2014</li>
+    
+      <li><a href="/tag/ed-itsolutions">#ed-itsolutions</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>As much as I hate Adobe Air some deluded companies think its the best way to make software and I’ve been forced on more than one occasion to deploy it to the whole network, which leads nicely into the big problem… There is no MSI and just as annoying software for it are .air files that it wants to install…</p>
+
+<p>Adobe Air does have a silent install option so its deployment can be scripted, my (&amp; my companies) method of deploying silent exes is to use this script:</p>
+
+<div class="language-vb highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dim</span> <span class="n">shell</span><span class="p">,</span> <span class="n">DQ</span><span class="p">,</span> <span class="n">MSI_store</span><span class="p">,</span> <span class="n">vbsinstall_folder</span><span class="p">,</span> <span class="n">path_to_exe</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">chkfile</span>
+
+<span class="c1">' Constants</span>
+
+<span class="n">DQ</span> <span class="o">=</span> <span class="n">chr</span><span class="p">(</span><span class="mi">34</span><span class="p">)</span>
+<span class="k">Set</span> <span class="n">FSys</span> <span class="o">=</span> <span class="n">CreateObject</span><span class="p">(</span><span class="s">"Scripting.FileSystemObject"</span><span class="p">)</span>
+<span class="n">vbsinstall_folder</span> <span class="o">=</span> <span class="s">"C:\vbs_install\"</span> <span class="c1">'path to store keys in</span>
+
+<span class="n">if</span> <span class="k">Not</span> <span class="n">Fsys</span><span class="p">.</span><span class="n">FolderExists</span><span class="p">(</span><span class="n">vbsinstall_folder</span><span class="p">)</span> <span class="k">Then</span>
+	<span class="n">Fsys</span><span class="p">.</span><span class="n">CreateFolder</span><span class="p">(</span><span class="n">vbsinstall_folder</span><span class="p">)</span>
+<span class="k">End</span> <span class="k">If</span>
+
+<span class="c1">' specify installations here</span>
+<span class="c1">' Install Function takes three params</span>
+<span class="c1">' First path to exe in quotes</span>
+<span class="c1">' Second any params to make it silent etc in quotes</span>
+<span class="c1">' Third file to check against to see if installed (this should include version number) in quotes</span>
+
+<span class="n">Install</span> <span class="s">"\\path\to\installer.exe"</span><span class="p">,</span> <span class="s">"/options /to /make /it /silent"</span><span class="p">,</span> <span class="s">"Identifying key"</span>
+
+<span class="c1">' Install After takes an extra option to make sure that it doesnt install until after something else</span>
+
+<span class="n">Install_After</span> <span class="s">"\\path\to\installer.exe"</span><span class="p">,</span> <span class="s">"/options /to /make /it /silent"</span><span class="p">,</span> <span class="s">"Identifying key"</span><span class="p">,</span> <span class="s">"Prereq Key"</span>
+
+<span class="c1">' Install Function</span>
+
+<span class="k">Sub</span> <span class="nf">Install</span><span class="p">(</span><span class="n">path_to_exe</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">chkfile</span><span class="p">)</span>
+
+	<span class="n">if</span> <span class="k">Not</span> <span class="n">FSys</span><span class="p">.</span><span class="n">FileExists</span><span class="p">(</span><span class="n">vbsinstall_folder</span> <span class="o">&amp;</span> <span class="n">chkfile</span><span class="p">)</span> <span class="k">Then</span>
+
+		<span class="n">set</span> <span class="n">shell</span><span class="o">=</span><span class="n">createobject</span><span class="p">(</span><span class="s">"wscript.shell"</span><span class="p">)</span>
+		<span class="n">shell</span><span class="p">.</span><span class="n">run</span> <span class="n">DQ</span> <span class="o">&amp;</span> <span class="n">path_to_exe</span> <span class="o">&amp;</span> <span class="n">DQ</span> <span class="o">&amp;</span> <span class="n">options</span> <span class="p">,</span><span class="mi">0</span> <span class="p">,</span><span class="n">true</span>
+		<span class="n">set</span> <span class="n">shell</span><span class="o">=</span><span class="n">nothing</span>
+
+		<span class="n">Fsys</span><span class="p">.</span><span class="n">CreateTextFile</span> <span class="n">vbsinstall_folder</span> <span class="o">&amp;</span> <span class="n">chkfile</span>
+
+	<span class="k">End</span> <span class="n">if</span>
+
+<span class="k">End</span> <span class="k">Sub</span>
+
+<span class="c1">' Install After</span>
+
+<span class="k">Sub</span> <span class="nf">Install_After</span><span class="p">(</span><span class="n">path_to_exe</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">chkfile</span><span class="p">,</span> <span class="n">prereq</span><span class="p">)</span>
+	<span class="n">if</span> <span class="n">FSys</span><span class="p">.</span><span class="n">FileExists</span><span class="p">(</span><span class="n">vbsinstall_folder</span> <span class="o">&amp;</span> <span class="n">prereq</span><span class="p">)</span> <span class="k">Then</span>
+		<span class="n">Install</span> <span class="n">path_to_exe</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">chkfile</span>
+	<span class="k">End</span> <span class="n">if</span>
+<span class="k">End</span> <span class="k">Sub</span>
+
+<span class="n">Wscript</span><span class="p">.</span><span class="n">Quit</span>
+</code></pre></div></div>
+
+<p>The script documents what you need to do but the install line for Adobe Air would be:</p>
+
+<div class="language-vb highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Install</span> <span class="s">"\\path\to\installer.exe"</span><span class="p">,</span> <span class="s">"-silent -eulaAccepted"</span><span class="p">,</span> <span class="s">"AdobeAir-X-Y"</span>
+</code></pre></div></div>
+
+<p>Subsitute X &amp; Y in the key for the version you are deploying e.g. 4-0. You will need to use this method to update Air in the future, so specifying the version number saves you having to remove the key later. Obviously drop the <code class="language-plaintext highlighter-rouge">-eulaAccepted</code> if you can’t accept it for the end user and want them to do it themselves.</p>
+
+<p>Air provides an installer for apps that you can run silently, but you need to run it after Air has installed (In most cases I only depoy air when it is actually needed so its going out at the same time as an app).</p>
+
+<p>Our script has another install function called <code class="language-plaintext highlighter-rouge">Install_After</code> that takes a 4th option. This 4th option is a key to check before running the install, the install will then only procede if that key exists. Taking this into account the install line for an Air app would be:</p>
+
+<div class="language-vb highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Install_After</span> <span class="s">"C:\Program Files (x86)\Adobe\Flash\AddIns\airappinstaller\airappinstaller.exe"</span><span class="p">,</span> <span class="s">"-silent \\path\to\air\app\with\no\spaces.air"</span><span class="p">,</span> <span class="s">"App"</span><span class="p">,</span> <span class="s">"AdobeAir-X-Y"</span>
+</code></pre></div></div>
+
+<p>This ensures that the installer wont be run before Air is installed and can even be used to make sure that a new version of Air is installed before running.</p>
+
+<p>The installed app will not have a shortcut anywhere so you will need to add them manually using your domain.</p>
+
+<p>Thats about it, our script makes deploying stuff via silent exes quite easy and safe. You can use GPP to delete the key files and have the script automatically re-install the software (unless the exe see the target product and ignores the request).</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

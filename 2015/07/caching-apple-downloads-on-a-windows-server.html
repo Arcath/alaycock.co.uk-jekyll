@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Caching Apple downloads on a Windows server</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Caching Apple downloads on a Windows server</h1>
+  <ul class="flex gap-2">
+    <li>15 July 2015</li>
+    
+      <li><a href="/tag/apple">#apple</a></li>
+    
+      <li><a href="/tag/squid">#squid</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>Yesterday I posted about <a href="/2015/07/caching-apple-downloads/">caching apple downloads</a> which was great but most of my schools do not have a linux server available nor do they have the spare equipment to setup anything that could be considered reliable enough.</p>
+
+<p>Now we do have plenty of Windows capacity so we need to run squid on a Windows server.</p>
+
+<p>A quick google and yes there is a version of <a href="http://docs.diladele.com/tutorials/installing_squid_windows/index.html">squid for Windows</a> which I installed to D:\Squid.</p>
+
+<p>The default config is pretty good and is 2 line changes away from being a caching server and then only needs the rules for the Apple download servers.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">#</span>
+<span class="err">#</span> <span class="nx">Recommended</span> <span class="nx">minimum</span> <span class="nx">configuration</span><span class="p">:</span>
+<span class="err">#</span>
+
+<span class="err">#</span> <span class="nx">Example</span> <span class="nx">rule</span> <span class="nx">allowing</span> <span class="nx">access</span> <span class="k">from</span> <span class="nx">your</span> <span class="nx">local</span> <span class="nx">networks</span><span class="p">.</span>
+<span class="err">#</span> <span class="nx">Adapt</span> <span class="nx">to</span> <span class="nx">list</span> <span class="nf">your </span><span class="p">(</span><span class="nx">internal</span><span class="p">)</span> <span class="nx">IP</span> <span class="nx">networks</span> <span class="k">from</span> <span class="nx">where</span> <span class="nx">browsing</span>
+<span class="err">#</span> <span class="nx">should</span> <span class="nx">be</span> <span class="nx">allowed</span>
+<span class="nx">acl</span> <span class="nx">localnet</span> <span class="nx">src</span> <span class="mf">10.0</span><span class="p">.</span><span class="mf">0.0</span><span class="o">/</span><span class="mi">8</span>	<span class="err">#</span> <span class="nx">RFC1918</span> <span class="nx">possible</span> <span class="nx">internal</span> <span class="nx">network</span>
+<span class="nx">acl</span> <span class="nx">localnet</span> <span class="nx">src</span> <span class="mf">172.16</span><span class="p">.</span><span class="mf">0.0</span><span class="o">/</span><span class="mi">12</span>	<span class="err">#</span> <span class="nx">RFC1918</span> <span class="nx">possible</span> <span class="nx">internal</span> <span class="nx">network</span>
+<span class="nx">acl</span> <span class="nx">localnet</span> <span class="nx">src</span> <span class="mf">192.168</span><span class="p">.</span><span class="mf">0.0</span><span class="o">/</span><span class="mi">16</span>	<span class="err">#</span> <span class="nx">RFC1918</span> <span class="nx">possible</span> <span class="nx">internal</span> <span class="nx">network</span>
+<span class="nx">acl</span> <span class="nx">localnet</span> <span class="nx">src</span> <span class="nx">fc00</span><span class="p">::</span><span class="o">/</span><span class="mi">7</span>       <span class="err">#</span> <span class="nx">RFC</span> <span class="mi">4193</span> <span class="nx">local</span> <span class="kr">private</span> <span class="nx">network</span> <span class="nx">range</span>
+<span class="nx">acl</span> <span class="nx">localnet</span> <span class="nx">src</span> <span class="nx">fe80</span><span class="p">::</span><span class="o">/</span><span class="mi">10</span>      <span class="err">#</span> <span class="nx">RFC</span> <span class="mi">4291</span> <span class="nx">link</span><span class="o">-</span><span class="nf">local </span><span class="p">(</span><span class="nx">directly</span> <span class="nx">plugged</span><span class="p">)</span> <span class="nx">machines</span>
+
+<span class="nx">acl</span> <span class="nx">SSL_ports</span> <span class="nx">port</span> <span class="mi">443</span>
+<span class="nx">acl</span> <span class="nx">Safe_ports</span> <span class="nx">port</span> <span class="mi">80</span>		<span class="err">#</span> <span class="nx">http</span>
+<span class="nx">acl</span> <span class="nx">Safe_ports</span> <span class="nx">port</span> <span class="mi">21</span>		<span class="err">#</span> <span class="nx">ftp</span>
+<span class="nx">acl</span> <span class="nx">Safe_ports</span> <span class="nx">port</span> <span class="mi">443</span>		<span class="err">#</span> <span class="nx">https</span>
+<span class="nx">acl</span> <span class="nx">Safe_ports</span> <span class="nx">port</span> <span class="mi">70</span>		<span class="err">#</span> <span class="nx">gopher</span>
+<span class="nx">acl</span> <span class="nx">Safe_ports</span> <span class="nx">port</span> <span class="mi">210</span>		<span class="err">#</span> <span class="nx">wais</span>
+<span class="nx">acl</span> <span class="nx">Safe_ports</span> <span class="nx">port</span> <span class="mi">1025</span><span class="o">-</span><span class="mi">65535</span>	<span class="err">#</span> <span class="nx">unregistered</span> <span class="nx">ports</span>
+<span class="nx">acl</span> <span class="nx">Safe_ports</span> <span class="nx">port</span> <span class="mi">280</span>		<span class="err">#</span> <span class="nx">http</span><span class="o">-</span><span class="nx">mgmt</span>
+<span class="nx">acl</span> <span class="nx">Safe_ports</span> <span class="nx">port</span> <span class="mi">488</span>		<span class="err">#</span> <span class="nx">gss</span><span class="o">-</span><span class="nx">http</span>
+<span class="nx">acl</span> <span class="nx">Safe_ports</span> <span class="nx">port</span> <span class="mi">591</span>		<span class="err">#</span> <span class="nx">filemaker</span>
+<span class="nx">acl</span> <span class="nx">Safe_ports</span> <span class="nx">port</span> <span class="mi">777</span>		<span class="err">#</span> <span class="nx">multiling</span> <span class="nx">http</span>
+<span class="nx">acl</span> <span class="nx">CONNECT</span> <span class="nx">method</span> <span class="nx">CONNECT</span>
+
+<span class="err">#</span>
+<span class="err">#</span> <span class="nx">Recommended</span> <span class="nx">minimum</span> <span class="nx">Access</span> <span class="nx">Permission</span> <span class="nx">configuration</span><span class="p">:</span>
+<span class="err">#</span>
+<span class="err">#</span> <span class="nx">Deny</span> <span class="nx">requests</span> <span class="nx">to</span> <span class="nx">certain</span> <span class="nx">unsafe</span> <span class="nx">ports</span>
+<span class="nx">http_access</span> <span class="nx">deny</span> <span class="o">!</span><span class="nx">Safe_ports</span>
+
+<span class="err">#</span> <span class="nx">Deny</span> <span class="nx">CONNECT</span> <span class="nx">to</span> <span class="nx">other</span> <span class="nx">than</span> <span class="nx">secure</span> <span class="nx">SSL</span> <span class="nx">ports</span>
+<span class="nx">http_access</span> <span class="nx">deny</span> <span class="nx">CONNECT</span> <span class="o">!</span><span class="nx">SSL_ports</span>
+
+<span class="err">#</span> <span class="nx">Only</span> <span class="nx">allow</span> <span class="nx">cachemgr</span> <span class="nx">access</span> <span class="k">from</span> <span class="nx">localhost</span>
+<span class="nx">http_access</span> <span class="nx">allow</span> <span class="nx">localhost</span> <span class="nx">manager</span>
+<span class="nx">http_access</span> <span class="nx">deny</span> <span class="nx">manager</span>
+
+<span class="err">#</span> <span class="nx">We</span> <span class="nx">strongly</span> <span class="nx">recommend</span> <span class="nx">the</span> <span class="nx">following</span> <span class="nx">be</span> <span class="nx">uncommented</span> <span class="nx">to</span> <span class="nx">protect</span> <span class="nx">innocent</span>
+<span class="err">#</span> <span class="nx">web</span> <span class="nx">applications</span> <span class="nx">running</span> <span class="nx">on</span> <span class="nx">the</span> <span class="nx">proxy</span> <span class="nx">server</span> <span class="nx">who</span> <span class="nx">think</span> <span class="nx">the</span> <span class="nx">only</span>
+<span class="err">#</span> <span class="nx">one</span> <span class="nx">who</span> <span class="nx">can</span> <span class="nx">access</span> <span class="nx">services</span> <span class="nx">on</span> <span class="dl">"</span><span class="s2">localhost</span><span class="dl">"</span> <span class="nx">is</span> <span class="nx">a</span> <span class="nx">local</span> <span class="nx">user</span>
+<span class="err">#</span><span class="nx">http_access</span> <span class="nx">deny</span> <span class="nx">to_localhost</span>
+
+<span class="err">#</span>
+<span class="err">#</span> <span class="nx">INSERT</span> <span class="nx">YOUR</span> <span class="nx">OWN</span> <span class="nc">RULE</span><span class="p">(</span><span class="nx">S</span><span class="p">)</span> <span class="nx">HERE</span> <span class="nx">TO</span> <span class="nx">ALLOW</span> <span class="nx">ACCESS</span> <span class="nx">FROM</span> <span class="nx">YOUR</span> <span class="nx">CLIENTS</span>
+<span class="err">#</span>
+
+<span class="err">#</span> <span class="nx">Example</span> <span class="nx">rule</span> <span class="nx">allowing</span> <span class="nx">access</span> <span class="k">from</span> <span class="nx">your</span> <span class="nx">local</span> <span class="nx">networks</span><span class="p">.</span>
+<span class="err">#</span> <span class="nx">Adapt</span> <span class="nx">localnet</span> <span class="k">in</span> <span class="nx">the</span> <span class="nx">ACL</span> <span class="nx">section</span> <span class="nx">to</span> <span class="nx">list</span> <span class="nf">your </span><span class="p">(</span><span class="nx">internal</span><span class="p">)</span> <span class="nx">IP</span> <span class="nx">networks</span>
+<span class="err">#</span> <span class="k">from</span> <span class="nx">where</span> <span class="nx">browsing</span> <span class="nx">should</span> <span class="nx">be</span> <span class="nx">allowed</span>
+<span class="nx">http_access</span> <span class="nx">allow</span> <span class="nx">localnet</span>
+<span class="nx">http_access</span> <span class="nx">allow</span> <span class="nx">localhost</span>
+
+<span class="err">#</span> <span class="nx">And</span> <span class="k">finally</span> <span class="nx">deny</span> <span class="nx">all</span> <span class="nx">other</span> <span class="nx">access</span> <span class="nx">to</span> <span class="k">this</span> <span class="nx">proxy</span>
+<span class="nx">http_access</span> <span class="nx">deny</span> <span class="nx">all</span>
+
+<span class="err">#</span> <span class="nx">Squid</span> <span class="nx">normally</span> <span class="nx">listens</span> <span class="nx">to</span> <span class="nx">port</span> <span class="mi">3128</span>
+<span class="nx">http_port</span> <span class="mi">3128</span>
+
+<span class="err">#</span> <span class="nx">Uncomment</span> <span class="nx">and</span> <span class="nx">adjust</span> <span class="nx">the</span> <span class="nx">following</span> <span class="nx">to</span> <span class="nx">add</span> <span class="nx">a</span> <span class="nx">disk</span> <span class="nx">cache</span> <span class="nx">directory</span><span class="p">.</span>
+<span class="nx">cache_dir</span> <span class="nx">ufs</span> <span class="o">/</span><span class="kd">var</span><span class="sr">/cache/</span><span class="nx">squid</span> <span class="mi">10000</span> <span class="mi">16</span> <span class="mi">256</span>
+<span class="nx">maximum_object_size</span> <span class="mi">5120</span> <span class="nx">MB</span>
+
+<span class="err">#</span> <span class="nx">Leave</span> <span class="nx">coredumps</span> <span class="k">in</span> <span class="nx">the</span> <span class="nx">first</span> <span class="nx">cache</span> <span class="nx">dir</span>
+<span class="nx">coredump_dir</span> <span class="o">/</span><span class="kd">var</span><span class="sr">/cache/</span><span class="nx">squid</span>
+
+<span class="err">#</span>
+<span class="err">#</span> <span class="nx">Add</span> <span class="nx">any</span> <span class="k">of</span> <span class="nx">your</span> <span class="nx">own</span> <span class="nx">refresh_pattern</span> <span class="nx">entries</span> <span class="nx">above</span> <span class="nx">these</span><span class="p">.</span>
+<span class="err">#</span>
+<span class="nx">refresh_pattern</span> <span class="o">^</span><span class="nx">ftp</span><span class="p">:</span>		<span class="mi">1440</span>	<span class="mi">20</span><span class="o">%</span>	<span class="mi">10080</span>
+<span class="nx">refresh_pattern</span> <span class="o">^</span><span class="nx">gopher</span><span class="p">:</span>	<span class="mi">1440</span>	<span class="mi">0</span><span class="o">%</span>	<span class="mi">1440</span>
+<span class="nx">refresh_pattern</span> <span class="o">-</span><span class="nf">i </span><span class="p">(</span><span class="sr">/cgi-bin/</span><span class="o">|</span><span class="err">\</span><span class="p">?)</span> <span class="mi">0</span>	<span class="mi">0</span><span class="o">%</span>	<span class="mi">0</span>
+<span class="nx">refresh_pattern</span> <span class="p">.</span>		<span class="mi">0</span>	<span class="mi">20</span><span class="o">%</span>	<span class="mi">4320</span>
+
+<span class="nx">refresh_pattern</span> <span class="o">-</span><span class="nx">i</span> <span class="nx">appldnld</span><span class="err">\</span><span class="p">.</span><span class="nx">apple</span><span class="err">\</span><span class="p">.</span><span class="nx">com</span> <span class="mi">129600</span> <span class="mi">100</span><span class="o">%</span> <span class="mi">129600</span> <span class="nx">ignore</span><span class="o">-</span><span class="nx">reload</span> <span class="nx">ignore</span><span class="o">-</span><span class="nx">no</span><span class="o">-</span><span class="nx">store</span> <span class="nx">override</span><span class="o">-</span><span class="nx">expire</span> <span class="nx">override</span><span class="o">-</span><span class="nx">lastmod</span> <span class="nx">ignore</span><span class="o">-</span><span class="nx">must</span><span class="o">-</span><span class="nx">revalidate</span>
+
+<span class="nx">refresh_pattern</span> <span class="o">-</span><span class="nx">i</span> <span class="nx">phobos</span><span class="err">\</span><span class="p">.</span><span class="nx">apple</span><span class="err">\</span><span class="p">.</span><span class="nx">com</span> <span class="mi">129600</span> <span class="mi">100</span><span class="o">%</span> <span class="mi">129600</span> <span class="nx">ignore</span><span class="o">-</span><span class="nx">reload</span> <span class="nx">ignore</span><span class="o">-</span><span class="nx">no</span><span class="o">-</span><span class="nx">store</span> <span class="nx">override</span><span class="o">-</span><span class="nx">expire</span> <span class="nx">override</span><span class="o">-</span><span class="nx">lastmod</span> <span class="nx">ignore</span><span class="o">-</span><span class="nx">must</span><span class="o">-</span><span class="nx">revalidate</span>
+</code></pre></div></div>
+
+<p>When I first tried to start squid with this config squid crashed on launch with an error about the cache not having the right folders in it. Running <code class="language-plaintext highlighter-rouge">D:\Squid\bin\squid.exe -z</code> fixed this.</p>
+
+<p>I then used the same PAC file as before modified to point at this proxy server which I hosted on IIS and then pointed all the iPads too.</p>
+
+<p>Its working the same as the other install as at the end of the day it is the same proxy server program just different OS.</p>
+
+<p>My <a href="/2015/07/caching-apple-downloads/">original article</a> has more about what we are actually doing with this config.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

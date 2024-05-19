@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Creating a WDS Discover Image</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Creating a WDS Discover Image</h1>
+  <ul class="flex gap-2">
+    <li>05 January 2021</li>
+    
+      <li><a href="/tag/wds">#wds</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>The DfE (Department for Education) has decided that the best laptop for pupils to use for remote learning is a <a href="https://geo-computers.com/geobook-1e/">GeoBook 1e</a> and I know what you’re thinking a Celeron and 64GB SSD! Kids today are spoiled!</p>
+
+<p>Joking aside this device has one big issue for us, no network port, which really interrupts the normal setup process.</p>
+
+<p>So the question becomes how do you use WDS to image a GeoBook 1e or any device without a network port? I’m sure the first instinct for a lot of people would be to throw a USB network card into the laptop and give it a try. This doesn’t normally work as they don’t have PXE ROMs on them.</p>
+
+<p>This is where a WDS Discover Image comes into play. A Discover Image works by getting the device to boot to a USB drive or CD and then use any network card to connect to WDS.</p>
+
+<h2 id="generating-the-discover-image">Generating the Discover Image</h2>
+
+<p>The first step is to create a Discover image on your WDS server. Hop into the WDS management console and go to your boot images, then right-click on your latest deployment image and click <em>Create Discover Image…</em></p>
+
+<p><img src="/assets/2021/01/creating-a-wds-discover-image/create-discover-image.png" alt="Create a Discover Image" /></p>
+
+<p>This brings up a wizard to create the Discover Image, which needs a couple of bits of information from you.</p>
+
+<p>Firstly where to save it, which I set to <code class="language-plaintext highlighter-rouge">C:\Discover\discover.wim</code> and then optionally the address of the WDS server. If you don’t specify an address the Discover image will do it’s best to find your WDS server when it boots.</p>
+
+<blockquote>
+  <p><em>Update</em>
+Further testing has shown that if you don’t specify an address WDS auto-detection will only work if WDS and DHCP are not on the same server.</p>
+</blockquote>
+
+<p><img src="/assets/2021/01/creating-a-wds-discover-image/save-to-disk.png" alt="Choose where to save your image" /></p>
+
+<p>Once you click next your image will be created and exported to the supplied path.</p>
+
+<p><img src="/assets/2021/01/creating-a-wds-discover-image/extracting-image.png" alt="Extracted the image" /></p>
+
+<p>Whilst this exports you can move on to creating the WinPE (Preinstallation Environment) Disk</p>
+
+<h2 id="creating-the-winpe-disk">Creating the WinPE Disk</h2>
+
+<p>To make the Discover Image bootable we need to bundle it inside a Windows Preinstall Environment.</p>
+
+<p>To do this you need the <em>Deployment Service Tools</em> and <em>WinPE Extension</em> from <a href="https://docs.microsoft.com/en-us/windows-hardware/get-started/adk-install">the ADK</a>,  which at the time of writing was the first two links on that page.</p>
+
+<p>When installing the ADK you only need to select <em>Deployment Tools</em> from the list of available components.</p>
+
+<p><img src="/assets/2021/01/creating-a-wds-discover-image/deployment-tools.png" alt="Select Deployment Tools" /></p>
+
+<p>Once that is installed you need the ADK’s WinPE extensions.</p>
+
+<p><img src="/assets/2021/01/creating-a-wds-discover-image/windows-pe-install.png" alt="WinPE Install" /></p>
+
+<p>With those tools installed it is just a case of waiting for the export of the image from earlier to finish.</p>
+
+<p>Once your ready fire up the <em>Deployment and Imaging Tools Environment</em> command promt from in the <em>Windows Kits</em> folder in the start menu.</p>
+
+<p>The first command creates a WinPE folder for you to work with.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>copype amd64 C:\winpe
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">amd64</code> can be replaced with other architectures if needed, it is the one required for the Geobook.</p>
+
+<p>Next you need to copy your newly minted Discover Image over to the winpe environment.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>copy /y C:\Discover\discover.wim C:\winpe\media\sources\boot.wim
+</code></pre></div></div>
+
+<p>This will overwrite the existing <em>boot.wim</em> with your discover image.</p>
+
+<p>Finally, you need to move the pe environment onto a bootable medium.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>makewinpemedia /ufd /f C:\winpe d:
+</code></pre></div></div>
+
+<p>Where <code class="language-plaintext highlighter-rouge">/ufd</code> means USB disk, <code class="language-plaintext highlighter-rouge">/f</code> means format and <code class="language-plaintext highlighter-rouge">d:</code> is the drive letter of the disk. This will format the disk, make it bootable and copy the WinPE files over to it.</p>
+
+<p>Thats it! Your USB stick is now usable.</p>
+
+<h2 id="using-it">Using It</h2>
+
+<p>With your USB stick in one USB port and a USB network adapter in the other it’s time to boot the laptop. In a bizarre turn of fate, my <a href="https://amzn.to/3hJKTIu">Startech USB network Adapter</a> did actually offer to network boot which took the wind out my sails a bit but lets keep moving.</p>
+
+<blockquote>
+  <p>On a GeoBook 1e you can get the boot menu by using the <code class="language-plaintext highlighter-rouge">f7</code> key.</p>
+</blockquote>
+
+<p><img src="/assets/2021/01/creating-a-wds-discover-image/booting.jpg" alt="Booting the laptop" /></p>
+
+<p>Once it boots the WDS installer should find the WDS server on your network automatically (or will just connect to it if you manually supplied the address). From here it’s pretty normal. WDS will use its normal answer files and give you all the images you have on your server.</p>
+
+<p>This process does skip the name &amp; approval step of WDS so be aware that the laptop will take what ever name your auto-naming gives it in WDS.</p>
+
+<h2 id="how-does-it-work">How does it work?</h2>
+
+<p>A Discover Image gets around the lack of a PXE ROM by allowing you to boot to alternative media. When a computer boots to network and pulls in the setup files from WDS it is a very similar process to the BIOS passing over to an OS on disk after POSTing. The PXE ROM handles downloading the setup files and then boots them, this is why a computer can network boot and then complain that it doesn’t have network drivers.</p>
+
+<p>The Discover Image only needs to contain the drivers for the USB Network card for it to be able to connect.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

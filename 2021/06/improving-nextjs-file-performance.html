@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Improving Next.JS File Performance</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Improving Next.JS File Performance</h1>
+  <ul class="flex gap-2">
+    <li>24 June 2021</li>
+    
+      <li><a href="/tag/next-js">#next-js</a></li>
+    
+      <li><a href="/tag/mdx">#mdx</a></li>
+    
+      <li><a href="/tag/react">#react</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>One thing static site generators can lure us into is not caring about build
+performance. If code works and the build passes quickly enough, it gets
+overlooked.</p>
+
+<p>I was building a new Code Component and, having to wait a minute for every
+refresh was making the feedback loop extremely slow. Couple that with having to
+restart the development server every few minutes and, it was unbearable.</p>
+
+<blockquote>
+  <p>I did discover after getting most of the work finished that Firefox was the
+cause of the slow page loads. However, the improvements in this post are still
+improvements.</p>
+</blockquote>
+
+<h2 id="read-all-the-files">Read all the Files.</h2>
+
+<p>I started with the assumption that I was interacting with the disk too much.
+This felt like the right place to start and, I knew one place that was an issue.</p>
+
+<p>So the first problem area I want to look at is <code class="language-plaintext highlighter-rouge">getPostBySlug</code>.</p>
+
+<p>```ts 5
+export const getPostBySlug = async &lt;K extends (keyof Post)[]&gt;(
+  slug: string[],
+  fields: K
+): Promise&lt;Pick&lt;Post, ArrayElement<K>&gt;&gt; =&gt; {
+  const basePosts = await getPostFiles()</K></p>
+
+<p>const index = indexedBy(‘slugString’, basePosts)</p>
+
+<p>const basePost = index[slug.join(‘-‘)]</p>
+
+<p>const post = await getPost(basePost)</p>
+
+<p>return pick(post, fields)
+}</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+This function works and does get a post from its slug. However, it does it in
+about the worse way it could.
+
+`getPostFiles` uses `fs.readdir` to get a list of all the folders in the posts
+directory. Which begs the question, why do I need to do it to get one post?
+
+Once it has every post, it uses `indexedBy` from
+[my utils library](https://utils.arcath.net/modules.html#indexedby) to create an
+object of posts indexed by their slug.
+
+That means two loops through every post on the site to get one post returned.
+
+`getPost` then actually reads in the file's contents and returns the MDX and the
+frontmatter.
+
+To solve this, I need to ask the question, why are posts not directly
+retrievable?
+
+The answer is that in the folder names I put the _day_ of the post as well as
+the year and month. The day is never used, and it would not be possible to use
+it in slugs or anything like that without invalidating all my current
+permalinks. So a quick rename of every folder to `year-month-slug` and
+`getPostBySlug` now looks a lot better.
+
+```ts 2-6 filename=lib/data/posts.ts
+export const getPostFromSlug = (year: string, month: string, slug: string) =&gt; {
+  const filePath = path.join(
+    POSTS_DIRECTORY,
+    [year, month, slug].join('-'),
+    'index.mdx'
+  )
+
+  return getPost(filePath)
+}
+</code></pre></div></div>
+
+<p>I can now <em>calculate</em> the posts file path entirely from the data in the URL. No
+more loops just a direct return of a file object.</p>
+
+<h2 id="a-file-proxy">A File Proxy</h2>
+
+<p>Speaking of file objects. There is a lot of duplication between each <em>type</em> of
+content on this site. The main reason for this is to provide very acurate
+typings. I decided that if I was going to try and improve file performance the
+last thing I wanted to do was get it working for one content type and then have
+to copy it to the others.</p>
+
+<p>To that end I created a <code class="language-plaintext highlighter-rouge">File</code> object that handles all interaction with the
+disk.</p>
+
+<p>A <code class="language-plaintext highlighter-rouge">File</code> takes 2 type parameters. <code class="language-plaintext highlighter-rouge">Frontmatter</code> which is the data returned from
+parsing the frontmatter and <code class="language-plaintext highlighter-rouge">Properties</code> which is the primitive data I can get
+by parsing the file path.</p>
+
+<p>As an example of <code class="language-plaintext highlighter-rouge">Properties</code> these are the properties of this post.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="nl">year</span><span class="p">:</span> <span class="dl">'</span><span class="s1">2021</span><span class="dl">'</span><span class="p">,</span>
+  <span class="nx">month</span><span class="p">:</span> <span class="dl">'</span><span class="s1">06</span><span class="dl">'</span><span class="p">,</span>
+  <span class="nx">slug</span><span class="p">:</span> <span class="dl">'</span><span class="s1">2021-06-improving-nextjs-performance</span><span class="dl">'</span><span class="p">,</span>
+  <span class="nx">href</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/2021/06/improving-nextjs-performance</span><span class="dl">'</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>It doesn’t really provide enough data to be useful to React but it is very
+useful for a <code class="language-plaintext highlighter-rouge">File</code>’s internals.</p>
+
+<p>A <code class="language-plaintext highlighter-rouge">File</code> has <em>getters</em> for <code class="language-plaintext highlighter-rouge">content</code>, <code class="language-plaintext highlighter-rouge">data</code> and <code class="language-plaintext highlighter-rouge">bundle</code> which all return a
+promise for a <code class="language-plaintext highlighter-rouge">string</code> or in the case of <code class="language-plaintext highlighter-rouge">data</code> an object of
+<code class="language-plaintext highlighter-rouge">Frontmatter &amp; Properties</code>.</p>
+
+<p>This means that the <code class="language-plaintext highlighter-rouge">getStaticProps</code> for a post is now a very clean get the
+post, bundle the post, return the post.</p>
+
+<p>```ts filename=pages/[year]/[month]/[slug].tsx
+export const getStaticProps = async ({
+  params
+}: GetStaticPropsContext&lt;{year: string; month: string; slug: string}&gt;) =&gt; {
+  if (params.year &amp;&amp; params.month &amp;&amp; params.slug) {
+    const post = getPostFromSlug(params.year, params.month, params.slug)</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>const source = await post.bundle
+
+return {
+  props: {
+    post: replaceProperty(
+      pick(await post.data, [
+        'slug',
+        'title',
+        'lead',
+        'href',
+        'tags',
+        'year',
+        'month',
+        'date'
+      ]),
+      'date',
+      date =&gt; date.toISOString()
+    ),
+    source
+  }
+}   } } ```
+</code></pre></div></div>
+
+<p>Again <code class="language-plaintext highlighter-rouge">pick</code> and <code class="language-plaintext highlighter-rouge">replaceProperty</code> come from my utils library.</p>
+
+<h2 id="caching">Caching</h2>
+
+<p>I wanted to look at caching which given my data is already on disk meant working
+with an memory cache.</p>
+
+<p>When you do any research into Next.JS caching it is all geared towards keeping
+your CMS data on disk to reduce the number of fetches. As I said my content is
+already on the disk so that isn’t a performance gain for me.</p>
+
+<p>An in memory cache has 2 problems in Next.JS.</p>
+
+<ol>
+  <li>Next.JS runs its build in multiple global scopes so a simple cache wont
+persist between build runs.</li>
+  <li>The development server is a single process but the cache wont automatically
+be invalidated by file changes.</li>
+</ol>
+
+<p>Ignoring both issues I created a simple global scope cache to hold file objects.</p>
+
+<p>```ts filename=lib/data/file.ts
+const fileCache: Record&lt;string, File&lt;any, any» = {}</p>
+
+<p>export const file = &lt;Frontmatter extends {}, Properties extends {}&gt;(
+  filePath: string,
+  properties: Properties
+): File&lt;Frontmatter, Properties&gt; =&gt; {
+  if (!fileCache[filePath]) {
+    fileCache[filePath] = createFile(filePath, properties)
+  }</p>
+
+<p>return fileCache[filePath] as File&lt;Frontmatter, Properties&gt;
+}
+```</p>
+
+<p>With this builds are slightly more effecient, but its not really noticable.</p>
+
+<p>Development is where this shines as being a single process this cache persists.
+<code class="language-plaintext highlighter-rouge">File</code> objects cache the contents and bundle within themselves so once the
+development site has read a file it doesn’t have to again.</p>
+
+<p>A quick <code class="language-plaintext highlighter-rouge">fs.watch</code> file watcher can then be used to clear the files internal
+cache if the file on the disk changes.</p>
+
+<h2 id="any-better">Any Better?</h2>
+
+<p>The build performance is about the same. Vercel did get the new site built
+quicker but 1 result isn’t enough to go on.</p>
+
+<p>Development feels a lot better, pages compile faster and although the cache
+isn’t used every time, it is used enough to notice an improvement.</p>
+
+<p>As always the updated source code is on
+<a href="https://github.com/Arcath/arcath.net-next">GitHub</a> if you interested.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

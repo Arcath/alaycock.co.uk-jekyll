@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Caching Apple Downloads</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Caching Apple Downloads</h1>
+  <ul class="flex gap-2">
+    <li>14 July 2015</li>
+    
+      <li><a href="/tag/apple">#apple</a></li>
+    
+      <li><a href="/tag/squid">#squid</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>The worst part of working with iPads is waiting for apps to download, watching your internet connection strain at 40+ devices downloading the 599MB Garage Band update. The 10Mb/s connection in the school this article was written in is spread over nearly 200 devices so these iPad updates are causing us a noticeable headache.</p>
+
+<p>Apple do offer a caching server as part of OSX Server which sounds on paper like a good solution to the problem but schools are often behind firewalls outside of their control on large networks that Apple never planned for. There are quite a few issues at the moment within Lancashire due to schools being told to use a caching server at another school that they can’t access.</p>
+
+<p>These issues rule out an Apple caching server, for me they have too much potential for wierdness and to just not work at all.</p>
+
+<p>So I looked at squid and weather it could be used as a cache and as it turns out it can! I found a great article by Luke Arms over on his blog http://lkrms.org/caching-ios-updates-on-a-squid-proxy-server/ which explains how to ignore Apple’s HTTP headers and cache the downloads.</p>
+
+<p>That article assumes that you already use squid which we don’t and more importantly for us our LEA uses a filtering system that uses the devices IP to apply filtering rules and log usage etc… a proxy would mess that right up. This can be solved but first I need to setup squid.</p>
+
+<p>For another iPad issue I already have a debain box running which I can easily add squid to so I quickly installed the <code class="language-plaintext highlighter-rouge">squid3</code> package and changed <code class="language-plaintext highlighter-rouge">/etc/squid3/squid.conf</code> to this:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">http_port</span> <span class="mi">3128</span>
+
+<span class="nx">hierarchy_stoplist</span> <span class="nx">cgi</span><span class="o">-</span><span class="nx">bin</span> <span class="p">?</span>
+<span class="nx">cache_mem</span> <span class="mi">1024</span> <span class="nx">MB</span>
+<span class="nx">cache_dir</span> <span class="nx">aufs</span> <span class="o">/</span><span class="nx">squid_cache</span><span class="o">/</span><span class="nx">cache</span> <span class="mi">81920</span> <span class="mi">16</span> <span class="mi">256</span>
+<span class="nx">maximum_object_size</span> <span class="mi">5120</span> <span class="nx">MB</span>
+
+<span class="nx">cache_store_log</span> <span class="o">/</span><span class="nx">squid_cache</span><span class="o">/</span><span class="nx">store</span><span class="p">.</span><span class="nx">log</span>
+<span class="nx">coredump_dir</span> <span class="o">/</span><span class="kd">var</span><span class="sr">/spool/</span><span class="nx">squid3</span>
+
+<span class="nx">refresh_pattern</span> <span class="o">^</span><span class="nx">ftp</span><span class="p">:</span> <span class="mi">1440</span> <span class="mi">20</span><span class="o">%</span> <span class="mi">10080</span>
+<span class="nx">refresh_pattern</span> <span class="o">^</span><span class="nx">gopher</span><span class="p">:</span> <span class="mi">1440</span> <span class="mi">0</span><span class="o">%</span> <span class="mi">1440</span>
+<span class="nx">refresh_pattern</span> <span class="o">-</span><span class="nf">i </span><span class="p">(</span><span class="sr">/cgi-bin/</span><span class="o">|</span><span class="err">\</span><span class="p">?)</span> <span class="mi">0</span> <span class="mi">0</span><span class="o">%</span> <span class="mi">0</span>
+<span class="nx">refresh_pattern</span> <span class="p">.</span> <span class="mi">0</span> <span class="mi">20</span><span class="o">%</span> <span class="mi">4320</span>
+
+<span class="nx">refresh_pattern</span> <span class="o">-</span><span class="nx">i</span> <span class="nx">appldnld</span><span class="err">\</span><span class="p">.</span><span class="nx">apple</span><span class="err">\</span><span class="p">.</span><span class="nx">com</span> <span class="mi">129600</span> <span class="mi">100</span><span class="o">%</span> <span class="mi">129600</span> <span class="nx">ignore</span><span class="o">-</span><span class="nx">reload</span> <span class="nx">ignore</span><span class="o">-</span><span class="nx">no</span><span class="o">-</span><span class="nx">store</span> <span class="nx">override</span><span class="o">-</span><span class="nx">expire</span> <span class="nx">override</span><span class="o">-</span><span class="nx">lastmod</span> <span class="nx">ignore</span><span class="o">-</span><span class="nx">must</span><span class="o">-</span><span class="nx">revalidate</span>
+
+<span class="nx">refresh_pattern</span> <span class="o">-</span><span class="nx">i</span> <span class="nx">phobos</span><span class="err">\</span><span class="p">.</span><span class="nx">apple</span><span class="err">\</span><span class="p">.</span><span class="nx">com</span> <span class="mi">129600</span> <span class="mi">100</span><span class="o">%</span> <span class="mi">129600</span> <span class="nx">ignore</span><span class="o">-</span><span class="nx">reload</span> <span class="nx">ignore</span><span class="o">-</span><span class="nx">no</span><span class="o">-</span><span class="nx">store</span> <span class="nx">override</span><span class="o">-</span><span class="nx">expire</span> <span class="nx">override</span><span class="o">-</span><span class="nx">lastmod</span> <span class="nx">ignore</span><span class="o">-</span><span class="nx">must</span><span class="o">-</span><span class="nx">revalidate</span>
+
+<span class="nx">quick_abort_min</span> <span class="o">-</span><span class="mi">1</span> <span class="nx">QB</span>
+
+<span class="nx">read_ahead_gap</span> <span class="mi">1</span> <span class="nx">MB</span>
+
+<span class="nx">positive_dns_ttl</span> <span class="mi">30</span> <span class="nx">seconds</span>
+<span class="nx">negative_dns_ttl</span> <span class="mi">1</span> <span class="nx">second</span>
+
+<span class="nx">minimum_expiry_time</span> <span class="mi">600</span> <span class="nx">seconds</span>
+<span class="nx">chunked_request_body_max_size</span> <span class="mi">4096</span> <span class="nx">KB</span>
+
+<span class="nx">acl</span> <span class="nx">manager</span> <span class="nx">proto</span> <span class="nx">cache_object</span>
+
+<span class="nx">acl</span> <span class="nx">localhost</span> <span class="nx">src</span> <span class="mf">127.0</span><span class="p">.</span><span class="mf">0.1</span><span class="o">/</span><span class="mi">32</span> <span class="p">::</span><span class="mi">1</span>
+<span class="nx">acl</span> <span class="nx">to_localhost</span> <span class="nx">dst</span> <span class="mf">127.0</span><span class="p">.</span><span class="mf">0.0</span><span class="o">/</span><span class="mi">8</span> <span class="mf">0.0</span><span class="p">.</span><span class="mf">0.0</span><span class="o">/</span><span class="mi">32</span> <span class="p">::</span><span class="mi">1</span>
+
+<span class="nx">acl</span> <span class="nx">curric</span> <span class="nx">src</span> <span class="mf">10.80</span><span class="p">.</span><span class="mf">64.0</span><span class="o">/</span><span class="mi">22</span>
+
+<span class="nx">http_access</span> <span class="nx">allow</span> <span class="nx">manager</span> <span class="nx">localhost</span>
+<span class="nx">http_access</span> <span class="nx">deny</span> <span class="nx">manager</span>
+
+<span class="nx">http_access</span> <span class="nx">deny</span> <span class="nx">to_localhost</span>
+
+<span class="nx">http_access</span> <span class="nx">allow</span> <span class="nx">curric</span>
+<span class="nx">http_access</span> <span class="nx">allow</span> <span class="nx">localhost</span>
+</code></pre></div></div>
+
+<p><em>This file is specific to my network and will need changing if you copy it.</em></p>
+
+<p><code class="language-plaintext highlighter-rouge">cache_dir</code> is the directory squid saves its cache to, I used <code class="language-plaintext highlighter-rouge">/squid_cache</code> which a separate partition mounted to that point. I also threw <code class="language-plaintext highlighter-rouge">cache_store_log</code> into the same folder.</p>
+
+<p><code class="language-plaintext highlighter-rouge">acl curric src 10.80.64.0/22</code> is the IP range the iPads are on.</p>
+
+<p>Everything else should be pretty uniform across networks.</p>
+
+<p>At this point squid is running as a cache box and can be used by any device, if used as a device’s proxy server it would work great and cache everything. I don’t want that, not only will it ruin the system we get from the LEA, it might result in Apple cached content being dropped to make room for something new.</p>
+
+<p>To only use this proxy server for Apple downloads I used a PAC file hosted on the IIS server that hosts the school intranet page.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nf">FindProxyForURL</span><span class="p">(</span><span class="nx">url</span><span class="p">,</span><span class="nx">host</span><span class="p">){</span>
+    <span class="nx">appleURLS</span><span class="o">=</span> <span class="p">[</span><span class="dl">"</span><span class="s2">*phobos*</span><span class="dl">"</span><span class="p">,</span><span class="dl">"</span><span class="s2">*appldnld*</span><span class="dl">"</span><span class="p">];</span>
+
+    <span class="k">for</span><span class="p">(</span><span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nx">i</span><span class="o">&lt;</span><span class="nx">appleURLS</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">){</span>
+        <span class="k">if</span><span class="p">(</span><span class="nf">shExpMatch</span><span class="p">(</span><span class="nx">host</span><span class="p">,</span> <span class="nx">appleURLS</span><span class="p">[</span><span class="nx">i</span><span class="p">])){</span>
+            <span class="k">return</span> <span class="dl">"</span><span class="s2">PROXY 10.80.64.10:3128;</span><span class="dl">"</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="dl">"</span><span class="s2">DIRECT</span><span class="dl">"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Once configured to use this file our iPads will go DIRECT to any URL unless it contains <code class="language-plaintext highlighter-rouge">phobos.apple.com</code> or <code class="language-plaintext highlighter-rouge">appldnld.apple.com</code> which it will send to the cache box.</p>
+
+<p>I saw an improvement straight away and the cache logs confirmed that the first iPad caused the cache box to cache the download and then the following iPads were served from the cache instead.</p>
+
+<p>I will keep this article up to date with any improvements I make over time but for now it seems pretty good.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

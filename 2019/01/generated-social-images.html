@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Generated Social Images</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Generated Social Images</h1>
+  <ul class="flex gap-2">
+    <li>23 January 2019</li>
+    
+      <li><a href="/tag/gatsby">#gatsby</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>I follow <a href="https://dev.to">dev.to</a> who have some great images on their tweets that are bascially just the post title and author. I really like the way it looks and want to try something here.</p>
+
+<p><img src="/assets/2019/01/generated-social-images/dev.to.png" alt="dev.to example" /></p>
+
+<p>I’m not a fan of manual labour and that includes using photoshop to create an image for each post so that only leaves generating the images with <a href="https://www.gatsbyjs.org/">Gatsby</a>.</p>
+
+<h1 id="jimp">JIMP</h1>
+
+<p>I wanted to keep the image generation entirely in Gatsby to keep things easier. This meant I needed a JS only image creation library which is where I found <a href="https://www.npmjs.com/package/jimp">JIMP</a>.</p>
+
+<p>I fire my <code class="language-plaintext highlighter-rouge">createImage</code> function for nodes that I might share like posts, notes and books during the <code class="language-plaintext highlighter-rouge">on-create-node</code> hook.</p>
+
+<p>This function creates an image for both Facebook and Twitter that I link to through the open graph tags in the templates <code class="language-plaintext highlighter-rouge">Helmet</code>.</p>
+
+<p>The images themselves are nothing special just the content background colour, the sites icon, the post date, and the title. Take the one for this post:</p>
+
+<p><img src="/assets/2019/01/generated-social-images/social-image.png" alt="This posts image" /></p>
+
+<p>The code to do this is pretty simple and can be found in the sites source <a href="https://github.com/Arcath/arcath.net-gatsby/blob/master/gatsby/create-page-image.js">here</a>. I was surprised how easy this turned out to be.</p>
+
+<p>Having gatsby generate the images instead is pretty handy. I can keep the images out of the git repository which is already pretty big and I wont have to remember to make sure they commit.</p>
+
+<p>This is a small feature that most users of the site wont even see but its a nice one to have. I’ve been more and more impressed with Gatsby as I’ve been using it to the point that I now think along with Netlify CMS it can be a complete replacement for WordPress for the School websites I build.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

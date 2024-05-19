@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Powershell script to update SIMS & FMS</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Powershell script to update SIMS & FMS</h1>
+  <ul class="flex gap-2">
+    <li>18 February 2014</li>
+    
+      <li><a href="/tag/powershell">#powershell</a></li>
+    
+      <li><a href="/tag/ed-itsolutions">#ed-itsolutions</a></li>
+    
+      <li><a href="/tag/sims">#sims</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>SIMS is a large application made by Capita that the schools are forced to use by the LEA, one of its many <em>features</em> is that it installs its own updates on launch (in theory) but over the years I’ve had no end of problems with it either not updating or failing to update properly so I started looking into scripting it.</p>
+
+<p>There is an EXE called <code class="language-plaintext highlighter-rouge">SIMSLoad.exe</code> that when run does nothing but install updates! Even on machines that have failed or just never decided to update. My first idea was to use this EXE to trigger updates, maybe by adding it as a startup script but I couldn’t get it to run silently.</p>
+
+<p>Next came the idea to copy its functionality which at a very basic level is to check the <code class="language-plaintext highlighter-rouge">SIMS\Setups</code> Directory for the installer versions and compare them to the versions <code class="language-plaintext highlighter-rouge">SIMSLoad.ini</code> says are installed on this machine. If there are any differences it installs the version from the server.</p>
+
+<p>This is the script I came up with:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$SimsInstall</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"C:\Program Files (x86)\SIMS\Sims .net"</span><span class="w">
+</span><span class="nv">$FMSInstall</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"C:\Program Files (x86)\SIMS\FMSSQL"</span><span class="w">
+
+</span><span class="kr">if</span><span class="p">(</span><span class="n">Test-Path</span><span class="w"> </span><span class="nv">$SimsInstall</span><span class="p">){</span><span class="w">
+    </span><span class="n">Get-Content</span><span class="w"> </span><span class="p">(</span><span class="nv">$SimsInstall</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s2">"\SimsLoad.ini"</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kr">ForEach</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nv">$application</span><span class="p">,</span><span class="w"> </span><span class="nv">$version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">Split</span><span class="p">(</span><span class="s2">"="</span><span class="p">)</span><span class="w">
+
+        </span><span class="kr">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="nv">$application</span><span class="w"> </span><span class="o">-Match</span><span class="w"> </span><span class="s2">"Last"</span><span class="p">)){</span><span class="w">
+            </span><span class="nv">$current_version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">System.Diagnostics.FileVersionInfo</span><span class="p">]::</span><span class="n">GetVersionInfo</span><span class="p">(</span><span class="nv">$SimsPath</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s2">"\Setups\"</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">$application</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s2">".exe"</span><span class="p">)</span><span class="o">.</span><span class="nf">FileVersion</span><span class="w">
+            </span><span class="kr">if</span><span class="p">(</span><span class="nv">$current_version</span><span class="o">.</span><span class="nf">compareTo</span><span class="p">(</span><span class="nv">$version</span><span class="p">)){</span><span class="w">
+                </span><span class="nv">$install</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$SimsPath</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s2">"\Setups\"</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">$application</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s1">'.exe'</span><span class="w">
+                </span><span class="o">&amp;</span><span class="w"> </span><span class="nv">$install</span><span class="w"> </span><span class="s1">'{QuietMode} [SIMSDotNetDirectory]="'</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">$SimsInstall</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s1">'"'</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="kr">if</span><span class="p">(</span><span class="n">Test-Path</span><span class="w"> </span><span class="nv">$FMSInstall</span><span class="p">){</span><span class="w">
+    </span><span class="n">Get-Content</span><span class="w"> </span><span class="p">(</span><span class="nv">$FMSInstall</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s2">"\FMSLoad.ini"</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kr">ForEach</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nv">$application</span><span class="p">,</span><span class="w"> </span><span class="nv">$version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">Split</span><span class="p">(</span><span class="s2">"="</span><span class="p">)</span><span class="w">
+
+        </span><span class="kr">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="nv">$application</span><span class="w"> </span><span class="o">-Match</span><span class="w"> </span><span class="s2">"Last"</span><span class="p">)){</span><span class="w">
+            </span><span class="nv">$current_version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">System.Diagnostics.FileVersionInfo</span><span class="p">]::</span><span class="n">GetVersionInfo</span><span class="p">(</span><span class="nv">$SimsPath</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s2">"\Setups\FMS\"</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">$application</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s2">".exe"</span><span class="p">)</span><span class="o">.</span><span class="nf">FileVersion</span><span class="w">
+            </span><span class="kr">if</span><span class="p">(</span><span class="nv">$current_version</span><span class="o">.</span><span class="nf">compareTo</span><span class="p">(</span><span class="nv">$version</span><span class="p">)){</span><span class="w">
+                </span><span class="nv">$install</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$SimsPath</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s2">"\Setups\FMS\"</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">$application</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s1">'.exe'</span><span class="w">
+                </span><span class="o">&amp;</span><span class="w"> </span><span class="nv">$install</span><span class="w"> </span><span class="s1">'{QuietMode}'</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>So what does this script do? For <code class="language-plaintext highlighter-rouge">SIMSLoad.ini</code> and <code class="language-plaintext highlighter-rouge">FMSLoad.ini</code> it runs through all the applications listed in the file discarding any that contain “<em>last</em>” to ignore the check dates and then gets the current version from the EXE on the server. If the versions do not match (assuming that the only cause for this is that the server has been updated and this client hasn’t) it then runs that applications installer silently.</p>
+
+<p>This script does require a permissions change on your SIMS share due to it being run on startup as SYSTEM. Firstly add all the machines with SIMS or FMS on to a security group in AD (I called mine <code class="language-plaintext highlighter-rouge">SIMS Machines</code>) then give <code class="language-plaintext highlighter-rouge">SYSTEM</code> and <code class="language-plaintext highlighter-rouge">SIMS Machines</code> read access to the shared area.</p>
+
+<h2 id="a-disclaimer">A Disclaimer</h2>
+
+<p>This script subverts SIMS normal updater and although it works fine for me you will need to perform significant testing before you roll it out to end users machines.</p>
+
+<p>You can fake the need for a SIMS update by lowering the version numbers in SIMSLoad.ini and I urge you to mess around with this as much as possible before you make the final decision about using this script.</p>
+
+<p>By using this script you agree that any damage caused to your SIMS is your fault, I can’t predict how it will effect updates years down the line.</p>
+
+<p>I will happily respond to queries about this script and any suggestions for improvements will be taken seriously.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

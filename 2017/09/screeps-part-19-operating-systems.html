@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Screeps Part 19 – Operating Systems</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Screeps Part 19 – Operating Systems</h1>
+  <ul class="flex gap-2">
+    <li>28 September 2017</li>
+    
+      <li><a href="/tag/screeps">#screeps</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>This is part 19 of my Screeps story, you can read the whole story <a href="/tag/screeps">here</a>.</p>
+
+<h2 id="building-an-os">Building an OS</h2>
+
+<p>One of my big issues is CPU usage. My inbox has been flooded with notifications telling me that my bucket is empty or high CPU forced my script to end etc… which is not good.</p>
+
+<p>I previously spent a lot of time improving my CPU usage and I’m not sure how my current AI can get any faster. The core of the issue is SODB. Search refinement isn’t done in a cacheable way and it only caches for the whole search not parts of it. I could make SODB do all that but it’s a fair bit of work that might not return a huge gain. This is made worse by my higher GCL. Having more rooms is adding more data to the databases which in turn is increasing the CPU cost of every action in the world.</p>
+
+<p>So the solution is a re-write of my AI using another approach. Alongside the Typescript discussion from the last post I have been seeing high praise for Operating Systems for AI Structure.</p>
+
+<h2 id="how-does-it-work">How does it work?</h2>
+
+<p>At the top of my main loop function, I create a new Kernel. The kernel has all my functions and objects for storing and altering the state of the os during this tick.</p>
+
+<p>When creating a new Kernel the process table only has 1 entry which is the Init process. This process spawns sub processes for gathering room data and restores the process table from last tick.</p>
+
+<p>The Init process has not yet been run. It is just sat alone in the process table. The next block of my main process is a while statement. While the Kernel can run a process it runs processes. The Kernel can run a process if the current CPU used this tick is below the limit and there is a process to be run.</p>
+
+<p>This means that some processes might get skipped this tick if there was no CPU to run them. This isn’t a problem. The process will persist in the table until it can be run.</p>
+
+<h2 id="suspension">Suspension</h2>
+
+<p>A big part of my CPU saving in my OS is process suspension.</p>
+
+<p>In the old AI, a harvester creep would get this run every tick:</p>
+
+<ul>
+  <li>Find the job
+    <ul>
+      <li>Is the creep empty?
+        <ul>
+          <li>Yes:
+            <ul>
+              <li>Can it harvest?
+                <ul>
+                  <li>Yes: Harvest</li>
+                  <li>No: is its fatigue 0?
+                    <ul>
+                      <li>Yes: creep.moveTo()</li>
+                      <li>No: Do Nothing</li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>No:
+            <ul>
+              <li>Did it transfer energy to a target?
+                <ul>
+                  <li>Yes: Transfer</li>
+                  <li>No: is its fatigue 0?
+                    <ul>
+                      <li>Yes: creep.moveTo()</li>
+                      <li>No: Do Nothing</li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p>There is a CPU cost to all these comparisons and processing even if it results in do nothing.</p>
+
+<p>My OS works like this:</p>
+
+<ul>
+  <li>Creep is spawned. Start a harvester lifetime process for it</li>
+  <li>Harvester LifeTime:
+    <ul>
+      <li>Is the creep empty:
+        <ul>
+          <li>Yes: Create a Harvest Process and suspend until it completes</li>
+          <li>No: Create a Deliver process and suspend until it completes</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>Harvest Process
+    <ul>
+      <li>Is the creep full?
+        <ul>
+          <li>No: Is the creep near to the source:
+            <ul>
+              <li>Yes: Is the source empty?
+                <ul>
+                  <li>Yes: Suspend for the TTR of the source</li>
+                  <li>No: Harvest</li>
+                </ul>
+              </li>
+              <li>No: Create a move process and suspend until it completes</li>
+            </ul>
+          </li>
+          <li>Yes: Complete</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>Move Process
+    <ul>
+      <li>Is the creep within the given range of the target
+        <ul>
+          <li>No: Is the creep’s fatigue 0?
+            <ul>
+              <li>Yes: moveTo()</li>
+              <li>No: Suspend for the number of ticks until it would be 0</li>
+            </ul>
+          </li>
+          <li>Yes: Complete</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>Delivery Process
+    <ul>
+      <li>Is the creep near to the target:
+        <ul>
+          <li>Yes:
+            <ul>
+              <li>Transfer Energy</li>
+              <li>Complete</li>
+            </ul>
+          </li>
+          <li>No: Create a Move Process and suspend until it completes</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p>It’s a lot more broken up than the old AI but spends a lot of time suspended. If a creep is moving to its target and it was going to take 10 ticks to reduce its fatigue to 0 the only CPU used by that creep is the init process checking if some processes have finished and its move process suspend being reduced by 1.</p>
+
+<h2 id="big-improvements">Big Improvements</h2>
+
+<h3 id="process-per-action-not-per-creep">Process per action not per creep</h3>
+
+<p>Processes are passed the creep name instead of the creep knowing which process controls it.</p>
+
+<p>This means that I never loop through all the creeps. Saving the CPU that is normally used to see if this creep needs to do anything this tick.</p>
+
+<h3 id="the-nearest-room-function">The Nearest Room Function</h3>
+
+<p>The old nearest room function was causing me some headaches. It simply sorted my rooms by their linear distance to the target room and picked the closest. It fell over when two rooms were adjacent but had no shared exit, the linear distance would be 1, but for a creep it would mean crossing 2 or more extra rooms to get there which would make another room the pathable closest.</p>
+
+<p><img src="/assets/2017/09/screeps-part-19-operating-systems/example-map.png" alt="Exmaple Map" /></p>
+
+<p>Considering the map above if for example I controlled I and G and asked for the nearest room to K I would get the G as the result. Technically yes G is only 1 room away from K but the path is rather long. I is only 2 away from K in a pathable way.</p>
+
+<p>I considered using the games path finder to path from each rooms controller and find the shortest path and call that the closest room. This, of course, requires sight in both rooms to get the controller. Other options involving the path finder might have worked but still, have pitfalls and involve a lot of computation.</p>
+
+<p>Instead, I opted to implement my own A* pathing algorithm which uses <code class="language-plaintext highlighter-rouge">Game.map.describeExits</code> to get the rooms that can be entered from the current room.</p>
+
+<p>Taking that example from before the Path from G to K looks like this:</p>
+
+<p><img src="/assets/2017/09/screeps-part-19-operating-systems/g-path.png" alt="Path from G to K" /></p>
+
+<p>We start in G which has a score of 1, 1 tile from the target and 0 tiles from the start. C gets a score of 3, 2 from the target and 1 from the start. H gets a score of 2, 1 from the target and 1 from the start. So the path finder moves the current room to H. It then scores L the only exit from H at 2. L has a score lower than C so the path continues that way. Once we pass into the corridor the score ties with C which would mean C might be used again but once the path gets pushed out that way the scores will be higher again and it will return to this path. Following this through you get  a path 8 rooms long.</p>
+
+<p>Let’s run the same thing for I.</p>
+
+<p><img src="/assets/2017/09/screeps-part-19-operating-systems/i-path.png" alt="Path from I to K" /></p>
+
+<p>The score for I is 2, 2 from the target, 0 from the start. E and J get scored with E getting 3 (2 from the target, 1 from start) and J getting 2 (1 from the target, 1 from start). We move to J which wouldn’t actually do any scoring because the target K is the available rooms list which stops it trying to path along F for an extra iteration.</p>
+
+<p>All this means I get a path 3 rooms long. 5 shorter than the path from G making I the nearest room. This is computationally heavier than the old system but it’s worth it to get creeps that actually arrive at the target.</p>
+
+<h2 id="never-idle">Never Idle</h2>
+
+<p>Another issue with the old AI was how often creeps would sit idle waiting for something to happen.</p>
+
+<p>Take the distributors. They would arrive at the source container and take some energy from it. If that didn’t fill the creep it would wait until the harvester had put more in the container. The new AI sends the creep off to deliver as soon as it has some energy in it. This will mean that not only do I save CPU by not checking every tick if the creep is full, I also get energy moving as fast as possible.</p>
+
+<p>The harvesters will become deliverers or upgraders if the source container is full or missing which should again mean I’m not wasting CPU on doing nothing.</p>
+
+<h2 id="bunkers">Bunkers</h2>
+
+<p>Bunkers are a different way of defending the room. Instead of building walls and keeping the attackers at the exits we let them in and kill them at the bunkers ramparts instead. This puts the attackers in range of all the rooms towers and protects everything important behind the ramparts.</p>
+
+<p>It’s a new way of running a room. All energy is linked into the bunker and moved around inside by mover creeps. When under attack the harvesters won’t spawn and instead the bunker will request energy from its terminal.</p>
+
+<p>There is a lot more to be said about bunkers which will be the subject of the next post.</p>
+
+<h2 id="get-screeps">Get Screeps</h2>
+
+<p>You can follow my progress on <a href="https://screeps.com/a/#!/profile/Arcath">my profile</a>. Once I reach RC4 I’m not sure how I am going to progress yet.</p>
+
+<p>You can read more about Screeps on their <a href="https://screeps.com/">site</a>. I purchased it through steam giving me the permanent 10 CPU and the desktop client.</p>
+
+<p>You can see my code as it was at the end of this post <a href="https://github.com/Arcath/screeps-code/tree/2933898a36f3ed06486965f9afe234dabc05d160">here</a>.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Moving to Gatsby</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Moving to Gatsby</h1>
+  <ul class="flex gap-2">
+    <li>04 December 2018</li>
+    
+      <li><a href="/tag/gatsby">#gatsby</a></li>
+    
+      <li><a href="/tag/typescript">#typescript</a></li>
+    
+      <li><a href="/tag/featured">#featured</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p><img src="/assets/2018/12/moving-to-gatsby/gatsby.png" alt="Gatsby Logo" /></p>
+
+<p><a href="https://www.gatsbyjs.org/">Gatsby</a> is you haven’t heard about it already is a static site generator that uses React &amp; GraphQL to build pages from your source.</p>
+
+<p>The sites it creates are lightning fast and a bit more than a a static site due to the react components still <em>working</em>.</p>
+
+<p>I’ve used it a couple of times to build some very basic sites for example <a href="/projects/the-book-lounge">my Mums shop</a> which didn’t really require me to dig into how it works. This site is something else, its a full featured blog with a portfolio style system as well.</p>
+
+<p>I had a list of requirements before I started the project which were as follows:</p>
+
+<ol>
+  <li>It must maintain the exisiting permalinks for my articles, I’ve had WordPress quite a while and I don’t want to throw 404s or redirects onto the exisitng urls.</li>
+  <li>It must be easy to edit. I don’t want to be looking up documentation every time I add a new post.</li>
+  <li>It should do more than my WordPress site. The whole point of moving to something more flexible is to be more flexible, If I’m just displaying posts in Gatsby instead of WordPress then there was no point.</li>
+</ol>
+
+<p>I think I’ve met all those targets and more with this site.</p>
+
+<h2 id="why-not-a-wordpress-theme">Why not a WordPress theme.</h2>
+
+<p>This is a genuine question, I am a WordPress developer and making themes is a big part of my job. For me WordPress and PHP are something I <em>have</em> to work with, I enjoy it but if I had a choice I would drop it in favour of something else. I also prefer making my front-ends in React which isn’t easily shoe-horned into WordPress.</p>
+
+<h2 id="typescript">Typescript</h2>
+
+<p>I love Typescript, I’ve been using it for quite a while on a few projects and it had to be something I used here. Thankfully there are some starters that exist and I chose to use <a href="https://github.com/resir014/gatsby-starter-typescript-plus">gatsby-starter-typescript-plus</a> which got me up and running straight away. I did have to delete a bunch of config from it as it breaks the most important rule (in my mind) for bootstrap code, it enforces a coding style.</p>
+
+<p>Dont get me wrong I can see why people like:</p>
+
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">foo</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">bar</span><span class="dl">'</span>
+
+<span class="k">if </span><span class="p">(</span> <span class="nx">foo</span><span class="p">.</span><span class="nx">bar</span> <span class="o">===</span> <span class="kc">true</span> <span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="mi">0</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>but its not my style, and having VSCode reformat my code to that style everytime I save is just fustratring.</p>
+
+<p>For reference I would format that as:</p>
+
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span><span class="nx">foo</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">bar</span><span class="dl">'</span>
+
+<span class="k">if</span><span class="p">(</span><span class="nx">foo</span><span class="p">.</span><span class="nx">bar</span> <span class="o">===</span> <span class="kc">true</span><span class="p">){</span>
+  <span class="k">return</span> <span class="mi">0</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>I’m going to write a bit about Typescript in general soon, I really like it despite its pitfalls.</p>
+
+<h2 id="the-site">The site</h2>
+
+<p>I’m really happy with how the site has turned out. Gatsby is incredibly powerful and has been more than up to the job.</p>
+
+<p>This is the first time I’ve given styled components a real go and they are a huge part of how easy this site was to build. I found it much easier to design the site and make some of its fancier features work as the <em>css</em> had access to the component props.</p>
+
+<p>I’ve gone for a layout that prioritises the content in a <em>Medium</em> like way. My old site had too many widgets and fluff around the content and I didn’t really need it. I really like how <em>clean</em> and easy to use this new site is.</p>
+
+<p>I’m going to make the same pledge I always do when I update my blog and that is to write more and post more content. I have quite a library of photos taken on my Nikon D3300 that I’d like to share.</p>
+
+<p><img src="/assets/2018/12/moving-to-gatsby/photography.jpg" alt="More Photography" /></p>
+
+<p>I’ve added a new type of content called <em>notes</em> where I will be posting smaller things that don’t really deserve thier own post but are worth saying.</p>
+
+<h2 id="gatsby">Gatsby</h2>
+
+<p>Gatsby took some wrangling, I think I was held back by thinking of it as Jekyll written in javascript, its not. It’s so much more.</p>
+
+<p>One of the things that took a bit of getting used to was the Gatsby has no pre-defined folder structure. After <code class="language-plaintext highlighter-rouge">gatsby-config.js</code> and <code class="language-plaintext highlighter-rouge">gatsby-node.js</code> its all up to you. My gatsby-node file creates pages for all the markdown content, and the tags ready for the site to be built from my templates.</p>
+
+<p>Gatsby uses Graphql to provide data to the templates which can be a little obscure at times as its not immediatley clear how data maps from your files to the graphql api, and then how you pass the variables the queries.</p>
+
+<p>The source of this site is available on <a href="https://github.com/Arcath/arcath.net-gatsby">GitHub</a> if you want to have a look at it.</p>
+
+<p>I’ve found the site created by Gatsby is insanely fast, not just <em>static HTML</em> fast, somehow even faster. I’m using some gatsby plugins to handle the images and performance which are doing some pretty incredible things. Most stuff has a gatsby plugin that <em>just works</em>, a dash of config from me and I’ve got a whole system running without me having to do any actual coding.</p>
+
+<p>I’ve got more ideas to implement that I will look at in the not to distant future and a few drafts ready to go that I will be publishing soon.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

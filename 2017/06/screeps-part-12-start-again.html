@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Screeps Part 12 – Start Again</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Screeps Part 12 – Start Again</h1>
+  <ul class="flex gap-2">
+    <li>22 June 2017</li>
+    
+      <li><a href="/tag/screeps">#screeps</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>This is part 12 of my Screeps story, you can read the whole story <a href="/tag/screeps">here</a>.</p>
+
+<blockquote>
+  <p>Like the last time I re-wrote my AI this post has become rather long. It is well worth a read as I think I had some pretty good ideas for AI improvements.</p>
+</blockquote>
+
+<h2 id="disaster">Disaster</h2>
+
+<p>So it has been a while since I seriously played Screeps. I’ve done a lot since then, moving house etc… which has stopped me playing. The one time I did dip into screeps I asked my AI to take a 4th room which has not gone well.</p>
+
+<p>My AI was trying to get to RC3 and stay there and it just couldn’t. The depression hit again killing off my rooms and my AI hit the 100 construction sites limit. With roads decaying because the tower was out of energy my AI was dropping more road sites. It was adding them faster than I could remove them and I just gave up.
+A New Improved AI</p>
+
+<p>I had lots of ideas for this new AI. The old creep director is pretty good and I re-used a large part of it. My focus with the new AI is too abstract the job queue away from the creeps and instead build a list of jobs that creeps then get assigned to. Once a creep has a job the old creep director will resurface running much as it did before.</p>
+
+<p>Roads are now built to meet my orders, not just because a creep stood on an empty tile.</p>
+
+<h2 id="webpack">Webpack</h2>
+
+<p>I’m going to make use of an NPM package that I created quite a while ago called SODB. Single Object DataBase gives an ORM-like interface to an array of objects.</p>
+
+<p>lodash provides some features like this but SODB can:</p>
+
+<ul>
+  <li>cache (in memory) its searches.
+    <ul>
+      <li>Will reduce the load on subsequent searches in the same loop saving CPU.</li>
+    </ul>
+  </li>
+  <li>search syntax
+    <ul>
+      <li>Moves the focus to find data instead of coding a loop to search myself every time I want some information.</li>
+    </ul>
+  </li>
+  <li>serialize to JSON.
+    <ul>
+      <li>Can store the JSON in screeps Memory.</li>
+      <li>Can restore the JSON from screeps memory saving the need to re-query the whole game.</li>
+    </ul>
+  </li>
+</ul>
+
+<p>To get SODB into screeps I need to use Webpack to build a single JS file with all my dependencies in. This highlighted an issue with SODB’s dependancy object-hash. It requires the built in node module crypto. This module is not bundled by webpack when using the node target and Screeps doesn’t give access to it. To cut a long story short SODB has been updated to make it Screeps safe with no loss of functionality.</p>
+
+<h2 id="how-does-the-new-ai-work">How does the new AI work?</h2>
+
+<p>Now I have everything I need to make the AI work its time to write it.</p>
+
+<h3 id="game-state">Game State</h3>
+
+<p>The new AI performs a lot of serialization. To decide when to use the serialized data and when to build it all a new I decided to create a hash of the game state.</p>
+
+<p>To create the hash of the game state I create an object that looks like this:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Get the total of all rcls added together (for state change on RCL up)</span>
+<span class="kd">var</span> <span class="nx">rclTotal</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="nx">_</span><span class="p">.</span><span class="nf">forEach</span><span class="p">(</span><span class="nx">Game</span><span class="p">.</span><span class="nx">rooms</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">room</span><span class="p">){</span>
+  <span class="k">if</span><span class="p">(</span><span class="nx">room</span><span class="p">.</span><span class="nx">controller</span><span class="p">){</span>
+    <span class="k">if</span><span class="p">(</span><span class="nx">room</span><span class="p">.</span><span class="nx">controller</span><span class="p">.</span><span class="nx">my</span><span class="p">){</span>
+      <span class="nx">rclTotal</span> <span class="o">+=</span> <span class="nx">room</span><span class="p">.</span><span class="nx">controller</span><span class="p">.</span><span class="nx">level</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+<span class="c1">// Use a hash to check if anything in the game has changed</span>
+<span class="kd">var</span> <span class="nx">hashCheck</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">codeRevision</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="c1">// Increment before deploy to force a new game state</span>
+  <span class="na">rooms</span><span class="p">:</span> <span class="nb">Object</span><span class="p">.</span><span class="nf">keys</span><span class="p">(</span><span class="nx">Game</span><span class="p">.</span><span class="nx">rooms</span><span class="p">).</span><span class="nx">length</span><span class="p">,</span>
+  <span class="na">creeps</span><span class="p">:</span> <span class="nb">Object</span><span class="p">.</span><span class="nf">keys</span><span class="p">(</span><span class="nx">Game</span><span class="p">.</span><span class="nx">creeps</span><span class="p">).</span><span class="nx">length</span><span class="p">,</span>
+  <span class="na">spawns</span><span class="p">:</span> <span class="nb">Object</span><span class="p">.</span><span class="nf">keys</span><span class="p">(</span><span class="nx">Game</span><span class="p">.</span><span class="nx">spawns</span><span class="p">).</span><span class="nx">length</span><span class="p">,</span>
+  <span class="na">structures</span><span class="p">:</span> <span class="nb">Object</span><span class="p">.</span><span class="nf">keys</span><span class="p">(</span><span class="nx">Game</span><span class="p">.</span><span class="nx">structures</span><span class="p">).</span><span class="nx">length</span><span class="p">,</span>
+  <span class="na">sites</span><span class="p">:</span> <span class="nb">Object</span><span class="p">.</span><span class="nf">keys</span><span class="p">(</span><span class="nx">Game</span><span class="p">.</span><span class="nx">constructionSites</span><span class="p">).</span><span class="nx">length</span><span class="p">,</span>
+  <span class="na">rclTotal</span><span class="p">:</span> <span class="nx">rclTotal</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">newHash</span> <span class="o">=</span> <span class="nx">Utils</span><span class="p">.</span><span class="nf">hash</span><span class="p">(</span><span class="nx">hashCheck</span><span class="p">)</span>
+
+<span class="k">if</span><span class="p">(</span><span class="nx">Memory</span><span class="p">.</span><span class="nx">stateCheck</span> <span class="o">!=</span> <span class="nx">newHash</span><span class="p">){</span>
+  <span class="c1">// Game state has changed!</span>
+  <span class="nx">Memory</span><span class="p">.</span><span class="nx">stateCheck</span> <span class="o">=</span> <span class="nx">newHash</span>
+<span class="p">}</span><span class="k">else</span><span class="p">{</span>
+  <span class="c1">// Game state is the same</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>With this whenever, a new creep, site, or building is created or a room levels up the hash will change. This is more robust than the old way of setting a flag in memory that rebuilt one part of the data. Now any change in any room causes a complete rebuild meaning that nothing gets missed.</p>
+
+<h3 id="flags">Flags</h3>
+
+<p>The old AI needed me to make a code change to give it instructions for other rooms. Claiming a new room was a case of adding its name to hash along with a room to claim it from. I was never a fan of this. It caused issues after a respawn where the AI was still pointed at rooms miles away and after it completed a task I need to change the code again so it didn’t send a new claimer.</p>
+
+<p>Flags give me a way to direct my creeps without using my code. My AI can create its own flags and clear mine when it completes the job if it needs to.</p>
+
+<p>Now when I want to claim a room I simply drop a flag on its controller and my AI will do what needs to be done. Same with mining other rooms and any other special tasks.</p>
+
+<p>I decided to come up with a colour coding system to dictate what a given flag does.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Primary Colour</th>
+      <th>Secondary Colour</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Orange</td>
+      <td>Orange</td>
+      <td>Build a road from spawn to this flag</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>Any Other Colour</td>
+      <td>Build a road from this flag to the matching flag. (Not implemented yet)</td>
+    </tr>
+    <tr>
+      <td>Purple</td>
+      <td>Purple</td>
+      <td>Reserve the controller under the flag</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>Red</td>
+      <td>Claim the controller under the flag</td>
+    </tr>
+    <tr>
+      <td>Yellow</td>
+      <td>N/A</td>
+      <td>Mine this source from another room. (Not implemented yet)</td>
+    </tr>
+    <tr>
+      <td>Green</td>
+      <td>N/A</td>
+      <td>Build this site using a creep from another room. The AI is left to make the decision of how best to achieve this.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>With this system, I can give instructions quickly without having to leave the games UI.</p>
+
+<h3 id="room-visualisations">Room Visualisations</h3>
+
+<p>This feature actually came out whilst I was writing this new AI. It exposes a canvas that only you can see over every room letting you provide more detailed information anywhere you want.</p>
+
+<p>The quickest use is to add some extra options to creep.moveTo() that lets you see the path a creep intends to take. With some colour coding, this can give a very easy way to see what creeps are doing and where.
+Deploying the New AI</p>
+
+<p>This was a hard decision to make. On the one hand I have 3 level 7 rooms and a 4th that should start working with the new AI. The problem with simply swapping branch is that some creeps already exist and there are a tonne of roads everywhere.</p>
+
+<p>I could hit the respawn button, take my new AI into a single room by itself and begin expanding from there.</p>
+
+<p>Before I could make a decision I was attacked by another player with my DEFCON system jumping in at the last second to save the day. I had 1 creep, in 1 room and 3 rooms slowly decaying into nothing.</p>
+
+<p>My AI was not completely ready at this point but it was better than what I was running before.</p>
+
+<p><img src="/assets/2017/06/screeps-part-12-start-again/saviour.png" alt="The last creep" /></p>
+
+<p>I had to manually patch the memory of the only creep alive so that it would start harvesting. This creep supplied enough energy to get another harvester out and that was the beginning of a very long journey.</p>
+
+<p>I had to quickly add the green flag system so I could build spawns in my other rooms. Once those spawns came up they ran pretty well, all be it a bit slow, to begin with.</p>
+
+<p>This new AI focuses on getting the Energy infrastructure working first without roads or towers. Once I can I build a tower and everything can start working as it should.</p>
+
+<p>I actually lost one of my rooms in this process but the new AI was able to re-claim it pretty quickly.</p>
+
+<p>So here we are, watching level 7 rooms use 5 part creeps and it’s painful. I know what these rooms can do at full whack and it’s hard seeing them trying to get basic functions working.</p>
+
+<p>I’m going to be doing more work on my AI shortly and hopefully, there won’t be such a long wait for part 13.</p>
+
+<h2 id="get-screeps">Get Screeps</h2>
+
+<p>You can follow my progress on <a href="https://screeps.com/a/#!/profile/Arcath">my profile</a>. Once I reach RC4 I’m not sure how I am going to progress yet.</p>
+
+<p>You can read more about Screeps on their <a href="https://screeps.com/">site</a>. I purchased it through steam giving me the permanent 10 CPU and the desktop client.</p>
+
+<p>You can see my code as it was at the end of this post <a href="https://github.com/Arcath/screeps-code/tree/a7ff7fff79207df88ae8d34a0cdc7291c52bfbb7">here</a>.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

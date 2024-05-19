@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CanCan Route Constraints</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">CanCan Route Constraints</h1>
+  <ul class="flex gap-2">
+    <li>02 November 2013</li>
+    
+      <li><a href="/tag/cancan">#cancan</a></li>
+    
+      <li><a href="/tag/ruby">#ruby</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>I use Sidekiq to handle the background jobs which is working great, but I noticed that some of them seemed to be failing! I had no way of seeing which jobs where failing or why because I handn’t mounted the WebUI anywhere. The issue I had was securing it, I can’t just rely on the fact that a random user wont know that it is at <code class="language-plaintext highlighter-rouge">/sidekiq</code>, especially since it lets you perform some job control.</p>
+
+<p>The only solution is to secure access to it, which I can only do within the routes. I also wanted to use the Authorization system I already had in place instead of adding something extra in (like HTTP basic etc…).</p>
+
+<p>I use <a href="https://github.com/ryanb/cancan">CanCan</a> which is a great solution, I just need to get it working in the router.</p>
+
+<p>The class I wrote to do this is actually pretty simple:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CanCanConstraint</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">resource</span><span class="p">)</span>
+        <span class="vi">@action</span> <span class="o">=</span> <span class="n">action</span>
+        <span class="vi">@resource</span> <span class="o">=</span> <span class="n">resource</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">matches?</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">request</span><span class="p">.</span><span class="nf">session</span><span class="p">[</span><span class="s1">'user_id'</span><span class="p">].</span><span class="nf">present?</span>
+            <span class="n">current_user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="nf">session</span><span class="p">[</span><span class="s1">'user_id'</span><span class="p">])</span>
+            <span class="n">ability</span> <span class="o">=</span> <span class="no">Ability</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">current_user</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ability</span><span class="p">.</span><span class="nf">can?</span><span class="p">(</span><span class="vi">@action</span><span class="p">,</span> <span class="vi">@resource</span><span class="p">)</span>
+        <span class="k">else</span>
+            <span class="k">return</span> <span class="kp">false</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>For my uses I mounted sidekiq like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mount</span> <span class="no">Sidekiq</span><span class="o">::</span><span class="no">Web</span><span class="p">,</span> <span class="ss">at: </span><span class="s1">'/sidekiq'</span><span class="p">,</span> <span class="ss">constraints: </span><span class="no">CanCanConstraint</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:manage</span><span class="p">,</span> <span class="ss">:sidekiq</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>So how does it work?</p>
+
+<p>The router lets you pass a class to the route constraints option, the only requirement being that this class/instance of a class has to respond to <code class="language-plaintext highlighter-rouge">matches?</code>. So my <code class="language-plaintext highlighter-rouge">CanCanConstraint</code> class is re-usable as it lets you specify which permission in CanCan you want to check the user has, in this case I check if the user can manage sidekiq (this is the same as using <code class="language-plaintext highlighter-rouge">can? :manage, :sidekiq</code> in a view).</p>
+
+<p>When <code class="language-plaintext highlighter-rouge">matches?</code> gets called it first checks if the session variable of <code class="language-plaintext highlighter-rouge">user_id</code> exists (assuming that guests would not be given access) and if it doesn’t return false. If it does exist it finds that user in the same way that <code class="language-plaintext highlighter-rouge">ApplicationController#current_user</code> does and then passes that user to <code class="language-plaintext highlighter-rouge">Ability.new</code> which is exactly what CanCan does (which is why you write your code in initialize). This then gives you the <code class="language-plaintext highlighter-rouge">can?</code> method same as in views. can? returns true or false based on the users assigned permissions, if you meet the requirements and it returns true the router will allow that route to exist for you.</p>
+
+<p>This means that for anyone not given manage permissions on sidekiq the route simply wont exist, you will get a 404 instead of a 403.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

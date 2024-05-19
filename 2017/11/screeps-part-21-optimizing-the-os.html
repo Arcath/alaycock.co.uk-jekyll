@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Screeps Part 21 – Optimizing the OS</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Screeps Part 21 – Optimizing the OS</h1>
+  <ul class="flex gap-2">
+    <li>22 November 2017</li>
+    
+      <li><a href="/tag/screeps">#screeps</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>This is part 21 of my Screeps story, you can read the whole story <a href="/tag/screeps">here</a>.</p>
+
+<h2 id="respawn-again">Respawn again</h2>
+
+<p>After talking in the last post about wanting to hunker down in my bunker and wait it out I’ve gone back on that and respawned into a new respawn area that opened up next to me. I was fed up with fighting Fritee for everything. If I had been able to claim the 3rd room it would still be 3 rooms vs 10 which I doubt I can win.</p>
+
+<p>I was the second player to respawn into this area and began a rush to RCL3 in my main room. RCL3 is the earliest you can afford to build a claimer (1 CLAIM &amp; 1 MOVE) creep.</p>
+
+<h2 id="room-path-finder">Room Path Finder</h2>
+
+<p>The room pathfinder I wrote was having some issues. Although it was finding a route it wasn’t the best. Something about the way A* pathfinding works seems to have issues when dealing with short paths like these. The scores never go much above 4 or 5 and that meant that exploring the wrong path for 2 rooms would result in a longer path than needed.</p>
+
+<p>To get to the bottom of this I needed to test the room pathfinder properly, not just watching were creeps appeared. This meant setting up my usual mocha/chai test suite and providing a few functions from <code class="language-plaintext highlighter-rouge">Game.map</code>.</p>
+
+<p>It took a bit of tweaking but it now selects the next room by finding all the rooms with the lowest score and then sorting them again based on distance to the target. This is now returning the paths I expect it to.</p>
+
+<h2 id="os-performance">OS Performance</h2>
+
+<p>My OS hasn’t had a chance to run many rooms properly before, it gave running my old RCL7 rooms ago but it fell over pretty badly. This time around it’s now running 5 rooms all of which are upgrading and building all the time averaging 25-30% CPU usage. This isn’t the insane level usage some of the 10CPU club get but it is way better than any of my old AIs.</p>
+
+<p>It’s had some issues prior to RCL4 and the storage being built. Without storage, there is no energy stockpile and the general use container used by everything is last on the energy list. When a builder is trying to build the base of the bunker and upgraders are trying to push to up the RCL they spend most of their time idle waiting for energy to come to them.</p>
+
+<p>Some of the performance losses are because of the claim speed, bigger rooms help smaller rooms, which means bigger rooms burn energy faster. This is a flaw in my design. I’m very focused at the higher levels, I wrote this AI for a mostly RCL7 empire that was on the cusp of RCL8 my focus was to get energy moving through terminals, react minerals in labs etc… not implementing better RCL1-3 code.</p>
+
+<p>All this being said I am exceedingly happy with my OS. The modular nature of the processes and ability to simply pass some metadata and suspend is great.</p>
+
+<p>Take the Courrier creeps I added to get energy from storage to general containers faster.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span><span class="nx">LifetimeProcess</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">../../os/process</span><span class="dl">'</span>
+
+<span class="k">import</span> <span class="p">{</span><span class="nx">CollectProcess</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">../creepActions/collect</span><span class="dl">'</span>
+<span class="k">import</span> <span class="p">{</span><span class="nx">DeliverProcess</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">../creepActions/deliver</span><span class="dl">'</span>
+
+<span class="k">export</span> <span class="kd">class</span> <span class="nc">CourrierLifetimeProcess</span> <span class="kd">extends</span> <span class="nc">LifetimeProcess</span><span class="p">{</span>
+  <span class="kd">type</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">courrierLifetime</span><span class="dl">'</span>
+
+  <span class="nf">run</span><span class="p">(){</span>
+    <span class="kd">let</span> <span class="nx">creep</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nf">getCreep</span><span class="p">()</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">creep</span><span class="p">){</span> <span class="k">return</span> <span class="p">}</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nf">sum</span><span class="p">(</span><span class="nx">creep</span><span class="p">.</span><span class="nx">carry</span><span class="p">)</span> <span class="o">===</span> <span class="mi">0</span><span class="p">){</span>
+      <span class="k">this</span><span class="p">.</span><span class="nf">fork</span><span class="p">(</span><span class="nx">CollectProcess</span><span class="p">,</span> <span class="dl">'</span><span class="s1">collect-</span><span class="dl">'</span> <span class="o">+</span> <span class="nx">creep</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">priority</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">{</span>
+        <span class="na">creep</span><span class="p">:</span> <span class="nx">creep</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
+        <span class="na">target</span><span class="p">:</span> <span class="k">this</span><span class="p">.</span><span class="nf">room</span><span class="p">().</span><span class="nx">storage</span><span class="o">!</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
+        <span class="na">resource</span><span class="p">:</span> <span class="nx">RESOURCE_ENERGY</span>
+      <span class="p">})</span>
+
+      <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="kd">let</span> <span class="nx">targets</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nf">filter</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nf">roomData</span><span class="p">().</span><span class="nx">generalContainers</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">container</span><span class="p">){</span>
+      <span class="k">return </span><span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nf">sum</span><span class="p">(</span><span class="nx">container</span><span class="p">.</span><span class="nx">store</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nx">container</span><span class="p">.</span><span class="nx">storeCapacity</span><span class="p">)</span>
+    <span class="p">})</span>
+
+    <span class="kd">let</span> <span class="nx">target</span> <span class="o">=</span> <span class="nx">creep</span><span class="p">.</span><span class="nx">pos</span><span class="p">.</span><span class="nf">findClosestByRange</span><span class="p">(</span><span class="nx">targets</span><span class="p">)</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="nx">target</span><span class="p">){</span>
+      <span class="k">this</span><span class="p">.</span><span class="nf">fork</span><span class="p">(</span><span class="nx">DeliverProcess</span><span class="p">,</span> <span class="dl">'</span><span class="s1">deliver-</span><span class="dl">'</span> <span class="o">+</span> <span class="nx">creep</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">priority</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">{</span>
+        <span class="na">creep</span><span class="p">:</span> <span class="nx">creep</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
+        <span class="na">target</span><span class="p">:</span> <span class="nx">target</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
+        <span class="na">resource</span><span class="p">:</span> <span class="nx">RESOURCE_ENERGY</span>
+      <span class="p">})</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>That is all the lifetime process needs. In fact aside from a little bit of code in the energy management process to ensure a courier is spawned this is all the code I needed to add the creep type.</p>
+
+<p>Simply, if the creep is empty create a collect process for this creep to get energy from storage and return. Once that collect process finishes the kernel will unsuspend this process which this time will pick a delivery target and then create a deliver process for that target. Again this process is suspended until the deliver process completes when it runs again the creep will be empty.</p>
+
+<p>The CPU limit caused me a couple of little issues. Firstly I had misunderstood how the bucket worked. I thought that you could withdraw up to 500 CPU from your bucket giving you 500 + your CPU limit. It doesn’t, instead, your bucket can be used to fill up to 500 CPU each tick. This caused me to hit my CPU limit a couple of times but it was easily fixed.</p>
+
+<p>Wanting to make my per tick CPU limit more dynamic and actually based on the level of my bucket I found a fantastic implementation in the Quorum bot.</p>
+
+<p><img src="/assets/2017/11/screeps-part-21-optimizing-the-os/cpu-limit.png" alt="CPU Limit" /></p>
+
+<p>As you can the CPU limit increases as the bucket level does. This means that I should always have something left in the bucket. In emergancies, I can do away with the limit and let the AI go nuts knowing that the normal limit code will have left something in the bucket for me.</p>
+
+<h2 id="market-sales">Market Sales</h2>
+
+<p>My first room reached RCL6 which means it has a terminal and extracts a mineral. Short term I need to build up a supply of credits as my last AI spent all of my 500K credits on boosts and left me broke. I dusted off the code from the last AI for sales which found the best buy price for my mineral where the energy cost to send it was low.</p>
+
+<p>That method resulted in my AI selling all my mineral to a nearby room for 0.01 a unit. Not great. Don’t want my AI to sell cheap because it’s nearby.</p>
+
+<p>So its time to look at the market order system.</p>
+
+<p>Instead of finding buy orders for my mineral and selling it to them my AI now advertises that there are X units of a mineral in my terminal and you can buy them for Y credits. It doesn’t cost me any energy to make the transfer and I am in control of the price I sell it for.</p>
+
+<p>On the subject of price. Setting the price for the sale has to be done by the AI at the time of creating the order so I can’t define a list of prices. If the value of my mineral is dropping I need to drop my price as well, if it’s booming I need my price to go up. My sale price is the average of the lowest 10 sales orders for the item. This puts my order in the cheapest 10 which is pretty good and will stop it being tricked into undercutting stupidly low orders.</p>
+
+<p>If my mineral isn’t shifting then I discount it every 1000 units to 98% of its original price. This is protected from abuse by tracking when it last discounted. If it discounts at 1k and then someone buys 200 units it won’t discount again until it reaches 2k.</p>
+
+<p>The order gets removed entirely if it reaches 0 remaining units which opens it up to resetting its price. This should mean that I’m covered for market changes. If the price goes up I will sell out my current stock and then re-list at the higher price. If the price drops I will build up a surplus and keep discounting.</p>
+
+<h2 id="stricter-typing">Stricter Typing</h2>
+
+<p>I’ve been using Typescript for a while now and my OS was written in typescript (not typed later) but I had a glaring hole in my typings that needed plugging.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">addProcess</code> function takes 4 arguments. The Process class to add, the name of the process, the priority of the process and the metadata to pass to it. To get it working I had originally set Process class to <code class="language-plaintext highlighter-rouge">any</code> and the metadata to an object of <code class="language-plaintext highlighter-rouge">any</code> type. There was no guarding to make sure that I was passing all the required metadata for a given process type.</p>
+
+<p>I’ve done some <a href="https://github.com/screepers/typed-screeps/pull/14">work</a> <a href="https://github.com/screepers/typed-screeps/pull/17">on</a> the typed-screeps 2.0.0 branch which lead me to an interesting feature of Typescript.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">type</span> <span class="nx">ProcessTypes</span> <span class="o">=</span>
+  <span class="dl">"</span><span class="s2">init</span><span class="dl">"</span> <span class="o">|</span>
+  <span class="dl">"</span><span class="s2">move</span><span class="dl">"</span>
+
+<span class="kd">type</span> <span class="nx">MetaData</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="dl">"</span><span class="s2">init</span><span class="dl">"</span><span class="p">:</span> <span class="p">{}</span>
+  <span class="dl">"</span><span class="s2">move</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="na">creep</span><span class="p">:</span> <span class="kr">string</span>
+    <span class="na">pos</span><span class="p">:</span> <span class="p">{</span>
+      <span class="na">x</span><span class="p">:</span> <span class="kr">number</span>
+      <span class="na">y</span><span class="p">:</span> <span class="kr">number</span>
+      <span class="na">roomName</span><span class="p">:</span> <span class="kr">string</span>
+    <span class="p">}</span>
+    <span class="nl">range</span><span class="p">:</span> <span class="kr">number</span>
+    <span class="nx">path</span><span class="p">?:</span> <span class="kr">string</span>
+    <span class="nx">lastPos</span><span class="p">?:</span> <span class="p">[</span><span class="kr">number</span><span class="p">,</span> <span class="kr">number</span><span class="p">,</span> <span class="kr">string</span><span class="p">]</span>
+    <span class="nx">stuck</span><span class="p">?:</span> <span class="kr">number</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">addProcess</span><span class="o">&lt;</span><span class="nx">T</span> <span class="kd">extends</span> <span class="nx">ProcessTypes</span><span class="o">&gt;</span><span class="p">(</span><span class="nx">processType</span><span class="p">:</span> <span class="nx">T</span><span class="p">,</span> <span class="nx">name</span><span class="p">:</span> <span class="kr">string</span><span class="p">,</span> <span class="nx">priority</span><span class="p">:</span> <span class="kr">number</span><span class="p">,</span> <span class="nx">metaData</span><span class="p">:</span> <span class="nx">MetaData</span><span class="p">[</span><span class="nx">T</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>This means that <code class="language-plaintext highlighter-rouge">T</code> must be a <code class="language-plaintext highlighter-rouge">ProcessType</code> and when I supply a process type in the function the metadata is then typed as <code class="language-plaintext highlighter-rouge">MetaData[the supplied type]</code>. Which now enforces a type of the metadata I pass.</p>
+
+<p>To get this working I’ve had to change the way I call addProcess. I use to import the process class where ever I needed it and then pass it to addProcess, this isn’t typable as I need it to be so I’ve created a constant for each process e.g. <code class="language-plaintext highlighter-rouge">AOS_MOVE_PROCESS</code> which the kernel looks up in its processTypes object, which it already had to re-inflate the process table each tick.</p>
+
+<h2 id="the-war">The War</h2>
+
+<p>I’ve waffled on this post quite a lot already. Let’s just say that another player has been causing me some major problems which will be the subject of part 22.</p>
+
+<h2 id="get-screeps">Get Screeps</h2>
+
+<p>You can follow my progress on <a href="https://screeps.com/a/#!/profile/Arcath">my profile</a>. Once I reach RC4 I’m not sure how I am going to progress yet.</p>
+
+<p>You can read more about Screeps on their <a href="https://screeps.com/">site</a>. I purchased it through steam giving me the permanent 10 CPU and the desktop client.</p>
+
+<p>You can see my code as it was at the end of this post <a href="https://github.com/Arcath/screeps-code/tree/6b19b0bfe3ac3a7a043fe8c93eada5de62f4d1e7">here</a>.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Netlify CMS on the filesystem with Gatsby</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+  </head>
+  <body>
+    <div class="grid grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
+        <img src="/assets/profile.jpg" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        
+        <a href="/">Home</a>
+        <a href="/blog/">All Posts</a>
+        <a href="/about/">About</a>
+        <a href="/uses/">Uses</a>
+        <a href="/contact/">Contact</a>
+      </div>
+      <div class="row-span-2">
+        <section class="pt-4 pr-4">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Netlify CMS on the filesystem with Gatsby</h1>
+  <ul class="flex gap-2">
+    <li>19 January 2019</li>
+    
+      <li><a href="/tag/netlify">#netlify</a></li>
+    
+      <li><a href="/tag/gatsby">#gatsby</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>I was looking at <a href="https://www.netlifycms.org/">Netlify CMS</a> for a website I was building and I wanted to test it before I put code to repo. Unfortunatley by default Netlify CMS will only let you use git as a backend which is great once the site is launched but when I want to test the CMS or dratically change the config the only way to test it would be to commit code that <em>should</em> work and then hope. This leaves a bad taste in my mouth, if code is hitting the repo it should pass tests so comitting something that on paper should work doesn’t feel right to me.</p>
+
+<p>Netlify CMS edits the <em>source</em> files directly normally by commiting to the git repo. I needed a way of making changes to the local file system directly.</p>
+
+<p>Before making changes to the config I needed to install <a href="https://www.npmjs.com/package/gatsby-plugin-netlify-cms">gatsby-plugin-netlify-cms</a> which adds everything you need to get going with Netlify CMS and Gatsby and created <code class="language-plaintext highlighter-rouge">static/admin/config.yml</code>.</p>
+
+<p>The important part of the file for this article is the <code class="language-plaintext highlighter-rouge">backend</code> which for me is:</p>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">backend</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">github</span>
+  <span class="na">repo</span><span class="pi">:</span> <span class="s">Arcath/...</span>
+</code></pre></div></div>
+
+<h1 id="fs-backend">FS Backend</h1>
+
+<p>Enter <a href="https://www.npmjs.com/package/netlify-cms-backend-fs">netlify-cms-backend-fs</a>.</p>
+
+<blockquote>
+  <p>Update 25/2/19 <code class="language-plaintext highlighter-rouge">netlify-cms-backend-fs</code> is in beta and there may/will be breaking changes eventually.</p>
+</blockquote>
+
+<p>To get this working in Gatsby I needed to make a couple of edits to my <code class="language-plaintext highlighter-rouge">gatsby-config.js</code> to load the fs-api and configure <code class="language-plaintext highlighter-rouge">gatsby-plugin-netlify-cms</code> so that it uses the fs backend.</p>
+
+<p>First off the entry in the <code class="language-plaintext highlighter-rouge">plugins</code> array needs changing to this:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="nl">resolve</span><span class="p">:</span> <span class="s2">`gatsby-plugin-netlify-cms`</span><span class="p">,</span>
+  <span class="nx">options</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nl">modulePath</span><span class="p">:</span> <span class="s2">`</span><span class="p">${</span><span class="nx">__dirname</span><span class="p">}</span><span class="s2">/src/cms/init.js`</span><span class="p">,</span> <span class="c1">// Or another path if you don't want to create /src/cms/init.js</span>
+    <span class="nx">enableIdentityWidget</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+    <span class="nx">publicPath</span><span class="p">:</span> <span class="dl">'</span><span class="s1">admin</span><span class="dl">'</span><span class="p">,</span>
+    <span class="nx">htmlTitle</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Content Manager</span><span class="dl">'</span><span class="p">,</span>
+    <span class="nx">manualInit</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>After that I needed to require the file system api from the backend.</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">let</span> <span class="nx">fsApi</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">netlify-cms-backend-fs/dist/fs/fs-express-api</span><span class="dl">'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The Gatsby config needs the middleware loading which can be done by adding <code class="language-plaintext highlighter-rouge">developMiddleware: fsApi</code> to the config object.</p>
+
+<p>To use it in development I added a <code class="language-plaintext highlighter-rouge">development_overrides</code> key to my <code class="language-plaintext highlighter-rouge">config.yml</code>:</p>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">development_overrides</span><span class="pi">:</span>
+  <span class="na">backend</span><span class="pi">:</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">file-system</span>
+    <span class="na">api_root</span><span class="pi">:</span> <span class="s1">'</span><span class="s">http://localhost:8000/api'</span>
+</code></pre></div></div>
+
+<p>Now I have all the config in place I just need to tie it all together with <code class="language-plaintext highlighter-rouge">src/cms/init.js</code></p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nx">CMS</span><span class="p">,</span> <span class="p">{</span> <span class="nx">init</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">netlify-cms</span><span class="dl">'</span>
+<span class="k">import</span> <span class="p">{</span><span class="nx">FileSystemBackend</span><span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">netlify-cms-backend-fs</span><span class="dl">'</span>
+
+<span class="c1">// If running in development</span>
+<span class="k">if</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">development</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nb">window</span><span class="p">.</span><span class="nx">CMS_ENV</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">development_overrides</span><span class="dl">'</span> <span class="c1">// Set the CMS_ENV to the development_ overrides.</span>
+  <span class="nx">CMS</span><span class="p">.</span><span class="nf">registerBackend</span><span class="p">(</span><span class="dl">'</span><span class="s1">file-system</span><span class="dl">'</span><span class="p">,</span> <span class="nx">FileSystemBackend</span><span class="p">)</span> <span class="c1">// Register the FileSystemBackend.</span>
+<span class="p">}</span>
+
+<span class="c1">// Start NetlifyCMS</span>
+<span class="nf">init</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>This has worked really well for me letting me test and use Netlify CMS on my local machine.</p>
+</div>
+        </section>
+        <footer class="mt-4">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

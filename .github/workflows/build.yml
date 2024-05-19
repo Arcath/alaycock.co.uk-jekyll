@@ -1,0 +1,45 @@
+name: 🚀 Deploy
+on:
+  push:
+    branches:
+      - main
+  release:
+    types: [published]
+  pull_request: {}
+
+jobs:
+  build:
+    name: 📚 Docs
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-docs
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 💎 Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3' # Not needed with a .ruby-version file
+          bundler-cache: false # runs 'bundle install' and caches installed gems automatically
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      
+      - name: 📥 Install Gems
+        run: bundle install
+      
+      - name: 📥 Install NPM Deps
+        run: npm install
+
+      - name: 🏗️ Build
+        run: bundle exec jekyll build
+
+      - name: 🚀 Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: _site

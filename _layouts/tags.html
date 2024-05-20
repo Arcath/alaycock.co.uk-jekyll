@@ -6,9 +6,7 @@ layout: default
 </div>
 
 <div class="grid grid-cols-2 gap-4">
-  {% for post in site.posts %}
-    {% if post.tags contains page.tag-name %}
-      {% include post.html post=post %}
-    {% endif %}
+  {% for post in page.tagged_posts %}
+    {% include post.html post=post %}
   {% endfor %}
 </div>

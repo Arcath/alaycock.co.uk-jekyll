@@ -1,21 +1,29 @@
-Jekyll::Hooks.register :posts, :post_write do |post|
-  all_existing_tags = Dir.entries("tag")
-  .map { |t| t.match(/(.*).md/) }
-  .compact.map { |m| m[1] }
+module TagsPlugin
+  class TagPageGenerator < Jekyll::Generator
+    safe true
 
-  tags = post['tags'].reject { |t| t.empty? }
-  tags.each do |tag|
-  generate_tag_file(tag) if !all_existing_tags.include?(tag)
+    def generate(site)
+      site.tags.each do |tag|
+        site.pages << TagPage.new(site, tag[0], tag[1])
+      end
+    end
   end
-end
 
-def generate_tag_file(tag)
-  # generate tag file
-  File.open("tag/#{tag}.md", "wb") do |file|
-    file << "---\nlayout: tags\ntag-name: #{tag}\nslug: /tag/#{tag.downcase}\ntitle: Posts Tagged #{tag}\n---\n"
+  class TagPage < Jekyll::Page
+    def initialize(site, tag, posts)
+      @site = site
+      @base = site.source
+      @dir = "tag/#{tag}"
+
+      @basename = 'index'
+      @ext = ".html"
+      @name = 'index.html'
+
+      @data = {
+        'layout' => 'tags',
+        'tagged_posts' => posts,
+        'title' => "Posts Tagged #{tag}"
+      }
+    end
   end
-  # generate feed file
-  #File.open("feeds/#{tag}.xml", "wb") do |file|
-  #file << "---\nlayout: feed\ntag-name: #{tag}\n---\n"
-  #end
 end

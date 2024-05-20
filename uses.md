@@ -1,6 +1,7 @@
 ---
 title: Uses
 layout: page
+permalink: /uses/
 ---
 This is a mostly complete list of the software I use on a day to day basis.
 

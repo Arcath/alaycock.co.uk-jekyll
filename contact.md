@@ -1,6 +1,7 @@
 ---
 layout: page
 title: Contact
+permalink: /contact/
 ---
 If you need to get in touch I can be reached on a few social platforms and by email.
 

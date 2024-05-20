@@ -1,6 +1,7 @@
 ---
 title: About
 layout: page
+permalink: /about/
 ---
 I am a School Network Manager from the North West of England.
 

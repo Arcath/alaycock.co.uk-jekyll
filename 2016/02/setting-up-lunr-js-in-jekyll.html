@@ -2,14 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Setting up lunr.js in Jekyll</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
   </head>
   <body>
-    <div class="grid grid-cols-layout gap-4">
-      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
-        <img src="/assets/profile.jpg" />
+    <div class="grid grid-cols-1 lg:grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 m-4 lg:mb-0 lg:mr-0 lg:col-start-2 text-center lg:text-left">
+        <img src="/assets/profile.jpg" alt="Adam Laycock" class="m-auto" />
         <h2 class="font-light text-2xl">Adam Laycock</h2>
         
         <a href="/">Home</a>
@@ -18,8 +19,8 @@
         <a href="/uses/">Uses</a>
         <a href="/contact/">Contact</a>
       </div>
-      <div class="row-span-2">
-        <section class="pt-4 pr-4">
+      <div class="lg:row-span-2">
+        <section class="p-4 lg:pb-0 lg:pl-0">
           <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
   <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Setting up lunr.js in Jekyll</h1>
   <ul class="flex gap-2">
@@ -562,7 +563,7 @@
     
         </span><span class="nl">"about"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
             </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"About"</span><span class="p">,</span><span class="w">
-            </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/about.html"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/about/.html"</span><span class="p">,</span><span class="w">
             </span><span class="nl">"summary"</span><span class="p">:</span><span class="w"> </span><span class="s2">"I am a School Network Manager from the North West of England.![Adam Laycock](/assets/profile.jpg)I&amp;apos;ve spent the last 15 years working as an IT Engineer in Schools. I&amp;apos;ve worked with all kinds of technologies, everything from Interactive Displays &amp;amp; Hall Audio systems through to USB Microscopes.As an Engineer at Ed-IT Solutions, I&amp;apos;ve..."</span><span class="w">
         </span><span class="p">}</span><span class="w">
         </span><span class="p">,</span><span class="w">
@@ -576,7 +577,7 @@
     
         </span><span class="nl">"contact"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
             </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Contact"</span><span class="p">,</span><span class="w">
-            </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/contact.html"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/contact/.html"</span><span class="p">,</span><span class="w">
             </span><span class="nl">"summary"</span><span class="p">:</span><span class="w"> </span><span class="s2">"If you need to get in touch I can be reached on a few social platforms and by email.## Social Media&amp;gt; [GitHub @Arcath](https://www.github.com/Arcath)&amp;gt; [Twitter @AdamMLaycock](https://www.twitter.com/AdamMLaycock)&amp;gt; [Polywork](https://cv.alaycock.co.uk)## By Email&amp;gt; adam@alaycock.co.uk"</span><span class="w">
         </span><span class="p">}</span><span class="w">
         </span><span class="p">,</span><span class="w">
@@ -597,7 +598,7 @@
     
         </span><span class="nl">"uses"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
             </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Uses"</span><span class="p">,</span><span class="w">
-            </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/uses.html"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/uses/.html"</span><span class="p">,</span><span class="w">
             </span><span class="nl">"summary"</span><span class="p">:</span><span class="w"> </span><span class="s2">"This is a mostly complete list of the software I use on a day to day basis.# Developer## Editor- [Visual Studio Code](https://code.visualstudio.com/). I&amp;apos;ve been using VSCode for a while now and its become my go to editor for everything.- [Railscasts Plus](https://marketplace.visualstudio.com/items?itemName=marlosirapuan.vscode-theme-railscasts-plus) editor theme.- [JetBrains Mono](https://www.jetbrains.com/lp/mono/). A great font with support..."</span><span class="w">
         </span><span class="p">}</span><span class="w">
         </span><span class="p">,</span><span class="w">
@@ -1044,7 +1045,7 @@
 <p>This is a great feature which should help users find content easier.</p>
 </div>
         </section>
-        <footer class="mt-4">
+        <footer class="mt-4 px-4 lg:px-0">
           &copy; Adam Laycock 2024
         </footer>
       </div>

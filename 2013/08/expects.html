@@ -2,14 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Expects</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
   </head>
   <body>
-    <div class="grid grid-cols-layout gap-4">
-      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 ml-4 col-start-2">
-        <img src="/assets/profile.jpg" />
+    <div class="grid grid-cols-1 lg:grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 m-4 lg:mb-0 lg:mr-0 lg:col-start-2 text-center lg:text-left">
+        <img src="/assets/profile.jpg" alt="Adam Laycock" class="m-auto" />
         <h2 class="font-light text-2xl">Adam Laycock</h2>
         
         <a href="/">Home</a>
@@ -18,8 +19,8 @@
         <a href="/uses/">Uses</a>
         <a href="/contact/">Contact</a>
       </div>
-      <div class="row-span-2">
-        <section class="pt-4 pr-4">
+      <div class="lg:row-span-2">
+        <section class="p-4 lg:pb-0 lg:pl-0">
           <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
   <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Expects</h1>
   <ul class="flex gap-2">
@@ -81,7 +82,7 @@
 <p>As I have said Expects main audience is Gem Developers who want to stop their code doing something damaging when the end user gives it an input that its not expecting.</p>
 </div>
         </section>
-        <footer class="mt-4">
+        <footer class="mt-4 px-4 lg:px-0">
           &copy; Adam Laycock 2024
         </footer>
       </div>

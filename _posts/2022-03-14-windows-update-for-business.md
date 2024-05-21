@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Windows Update for Business
+lead: Configuring Windows Update for Business across the network.
 date: 2022-03-14T18:20:37.426Z
 tags:
   - windows-update

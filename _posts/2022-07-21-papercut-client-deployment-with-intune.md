@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Papercut Client deployment with Intune
+lead: Building on the official Papercut intructions to reliably deploy the Papercut client with Intune.
 date: 2022-07-21
 tags:
   - papercut

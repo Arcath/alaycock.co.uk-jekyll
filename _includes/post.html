@@ -1,6 +1,6 @@
 <div class="bg-white border-gray-300 border shadow-xl p-2" >
   <h2 class="font-light text-2xl border-b border-gray-200 mb-2"><a href="{{ include.post.url }}">{{ include.post.title }}</a></h2>
-  {{ include.post.excerpt }}
+  {{ include.post.lead }}
   <ul class="border-t border-gray-200 mt-2 flex gap-2">
     <li>{{ include.post.date | date_to_long_string }}</li>
     {% for tag in post.tags %}

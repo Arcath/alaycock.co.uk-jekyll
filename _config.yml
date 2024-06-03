@@ -1,4 +1,5 @@
 title: Adam Laycock
+description: EdTech Network Manager & Developer
 
 plugins:
   - jekyll-postcss-v2
@@ -21,6 +22,7 @@ exclude:
   - postcss.config.js
   - LICENSE
   - docker
+  - support files
 
 permalink: /:year/:month/:title
 
@@ -29,6 +31,7 @@ defaults:
       path: "" # an empty string here means all files in the project
     values:
       layout: "default"
+      ogimage: "https://alaycock.co.uk/assets/og-image.png"
   
   - scope:
       path: ""

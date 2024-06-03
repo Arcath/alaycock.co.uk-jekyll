@@ -1,7 +1,7 @@
 ---
 title: Back to Jekyll
 lead: I'm back on Jekyll
-date: 2024-06-02
+date: 2024-06-03
 tags:
  - jekyll
  - blog
@@ -14,4 +14,6 @@ My main reason for moving off Jekyll in the past was to get more features and gr
 
 ## GitHub Actions
 
-With GitHub Actions (not exctly new), I can build the site then publish it through GitHub pages. This is much more powerful than GitHub pages by itself. I've made my own plugin tags which would not be possible 
+With GitHub Actions (not exctly new), I can build the site then publish it through GitHub pages. This is much more powerful than GitHub pages by itself. I've made my own plugin tags which would not be possible if I was just using pages to build the site.
+
+I'm happy with the site now, which I haven't been for a while. Certainly the last incarnation that had its posts off in a 3rd party API. 

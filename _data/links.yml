@@ -5,3 +5,11 @@
  - label: "@AdamMLaycock"
    target: https://twitter.com/AdamMLaycock
    icon: fa-brands fa-x-twitter
+  
+ - label: "@alaycock.co.uk"
+   target: https://bsky.app/profile/alaycock.co.uk
+   icon: fa-brands fa-bluesky
+
+ - label: "Linked In"
+   target: https://www.linkedin.com/in/adam-laycock-9aa2a234/
+   icon: fa-brands fa-linkedin

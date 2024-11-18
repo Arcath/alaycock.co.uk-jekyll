@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/assets/512.png" />
+    <title>Keeping profiles under control with a remdiation.</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+    <meta property="og:title" content="Adam Laycock / Keeping profiles under control with a remdiation." />
+    <meta property="og:description" content="Free up disk space by deleting inactive profiles." />
+    <meta property="og:image" content="https://alaycock.co.uk/assets/og-image.png" />
+  </head>
+  <body>
+    <div class="grid grid-cols-1 lg:grid-cols-layout gap-4">
+      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 mx-4 lg:col-start-2 lg:mx-0 text-center lg:text-left">
+        <img src="/assets/profile.jpg" alt="Adam Laycock" class="lg:m-auto w-32 float-left lg:float-none lg:w-full mr-4" />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        <h3 class="font-light text-lg">EdTech Network Manager & Developer</h3>
+        
+        <div class="grid grid-cols-3 gap-2 text-center mt-4">
+          <a href="/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Home</a>
+          <a href="/blog/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Posts</a>
+          <a href="/talks/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Talks</a>
+          <a href="/about/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">About</a>
+          <a href="/uses/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Uses</a>
+          <a href="/contact/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Contact</a>
+        </div>
+      </div>
+      <div class="lg:row-span-2">
+        <section class="p-4 lg:pb-0 lg:pl-0">
+          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Keeping profiles under control with a remdiation.</h1>
+  <ul class="flex gap-2">
+    <li>18 November 2024</li>
+    
+      <li><a href="/tag/intune">#intune</a></li>
+    
+      <li><a href="/tag/powershell">#powershell</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>We had a persistent problem in school with computers having low disk space. This issue came from the local user profiles and was a constantly building issue as the number of profiles on each computer would just keep growing. With software like <a href="https://superuser.com/questions/1634322/where-is-microsoft-teams-application-located-on-my-windows-10-computer#:~:text=If%20Microsoft%20Teams%20is%20actually%20installed%20then%20it%27s,location%20then%20Microsoft%20Teams%20is%20not%20actually%20installed.">Teams installing in AppData</a> local user profiles are becoming rather large.</p>
+
+<p>We have a rather agressive profile clearing policy that should be deleting all profiles over 14 days old for student computers and 60 on staff computers. This has been rendered useless by some annoying <em>bugs</em> in Windows 10+ where profiles have <a href="https://techcommunity.microsoft.com/t5/windows-deployment/issue-with-date-modified-for-ntuser-dat/td-p/102438">always been accessed today</a>.</p>
+
+<p>Even when this policy works its not the best solution for us, especially on our high traffic computers. For example a computer in one of our main IT suites could see in the region of 20 users a week which means a lot of recently used profile space.</p>
+
+<p>As with a lot of things in Windows the solution is PowerShell, in this case an <a href="https://learn.microsoft.com/en-us/mem/intune/fundamentals/remediations">Intune Remediation</a>.</p>
+
+<p>An Intune Remediation is made up of 2 PowerShell scripts. One that <em>detects</em> a device in need of remediation and then another that <em>remediates</em> the device. The detection is then run again to ensure that the device has been <em>remediated</em> correctly.</p>
+
+<h2 id="detecting-a-device-that-needs-remediating">Detecting a device that needs remediating</h2>
+
+<p>The detection script for this issue is very simple.</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$logPath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"C:\LOG\Path\here.txt"</span><span class="w">
+
+</span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="o">-not</span><span class="w"> </span><span class="p">(</span><span class="n">Test-Path</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nv">$logPath</span><span class="p">)){</span><span class="w">
+    </span><span class="n">New-Item</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nv">$logPath</span><span class="w"> </span><span class="nt">-ItemType</span><span class="w"> </span><span class="nx">File</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Out-Null</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+
+</span><span class="nv">$disk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Volume</span><span class="w"> </span><span class="nt">-DriveLetter</span><span class="w"> </span><span class="nx">C</span><span class="w">
+
+</span><span class="n">Add-Content</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nv">$logPath</span><span class="w"> </span><span class="nt">-Value</span><span class="w"> </span><span class="s2">"</span><span class="si">$(</span><span class="n">Get-Date</span><span class="p">)</span><span class="s2">: Testing disk space for profiles"</span><span class="w">
+
+</span><span class="kr">if</span><span class="p">(</span><span class="nv">$disk</span><span class="o">.</span><span class="nf">SizeRemaining</span><span class="w"> </span><span class="o">-lt</span><span class="w"> </span><span class="mi">20</span><span class="n">GB</span><span class="p">){</span><span class="w">
+    </span><span class="n">Add-Content</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nv">$logPath</span><span class="w"> </span><span class="nt">-Value</span><span class="w"> </span><span class="s2">"</span><span class="si">$(</span><span class="n">Get-Date</span><span class="p">)</span><span class="s2">: Less than 20GB remaining, will remediate"</span><span class="w">
+
+    </span><span class="kr">exit</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">Add-Content</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nv">$logPath</span><span class="w"> </span><span class="nt">-Value</span><span class="w"> </span><span class="s2">"</span><span class="si">$(</span><span class="n">Get-Date</span><span class="p">)</span><span class="s2">: More than 20GB remaining"</span><span class="w">
+
+
+</span><span class="kr">exit</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span></code></pre></div></div>
+
+<p>When a detection script exits with <code class="language-plaintext highlighter-rouge">0</code> the device is fine, any other exit code means that the computer requires remediation.</p>
+
+<p>This script exits <code class="language-plaintext highlighter-rouge">1</code> if there is less than <code class="language-plaintext highlighter-rouge">20GB</code> left on the C: drive.</p>
+
+<h2 id="remediating-the-computer">Remediating the computer</h2>
+
+<p>When a device needs remediating the script needs to delete profiles from the computer until it has more than <code class="language-plaintext highlighter-rouge">30GB</code> of space on the disk.</p>
+
+<blockquote>
+  <p>We clear to 30GB so that the computer doesn’t keep getting remediated every day when a new profile is created.</p>
+</blockquote>
+
+<p>A profile can be deleted if:</p>
+
+<ul>
+  <li>It is not currently logged in.</li>
+  <li>It is not the only profile on the computer.</li>
+</ul>
+
+<p>There is then an additional requirement that is harder to code for. We don’t want to delete the profile of the computers “main user”. As has happened on some of our machines with cover and room shares the main teacher in a room has found thier profile deleted. It’s not a big issue as the local profile is only settings, but it slows people down and isn’t the best outcome when there were other profiles it could have cleared. We set the main user by ending the computers hostname with the user’s username. This admitedly only works because we have 3 letter usernames for staff so <code class="language-plaintext highlighter-rouge">RMXX-T-YYY</code> is a pretty descriptive hostname. It’s then a simple compare in the script to see if the target folder matches the last 3 letters of the hostname.</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$logPath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"C:\LOG\Path\here.txt"</span><span class="w">
+
+</span><span class="kr">function</span><span class="w"> </span><span class="nf">Delete-OldestProfile</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nv">$computerOwner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nv">$</span><span class="nn">env</span><span class="p">:</span><span class="nv">computername</span><span class="w"> </span><span class="o">-replace</span><span class="w"> </span><span class="s1">'^.*(?=.{3}$)'</span><span class="p">)</span><span class="o">.</span><span class="nf">ToLower</span><span class="p">()</span><span class="w">
+    
+    </span><span class="nv">$profiles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gwmi</span><span class="w"> </span><span class="nx">win32_userprofile</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Where-Object</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">Special</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="bp">$false</span><span class="w"> </span><span class="o">-and</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">Loaded</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="bp">$false</span><span class="w"> </span><span class="o">-and</span><span class="w"> </span><span class="o">-not</span><span class="w"> </span><span class="p">((</span><span class="bp">$_</span><span class="o">.</span><span class="nf">LocalPath</span><span class="o">.</span><span class="nf">split</span><span class="p">(</span><span class="s1">'\'</span><span class="p">)[</span><span class="nt">-1</span><span class="p">])</span><span class="o">.</span><span class="nf">toLower</span><span class="p">()</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="nv">$computerOwner</span><span class="p">)}</span><span class="w">
+
+    </span><span class="n">Add-Content</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nv">$logPath</span><span class="w"> </span><span class="nt">-Value</span><span class="w"> </span><span class="s2">"</span><span class="si">$(</span><span class="n">Get-Date</span><span class="p">)</span><span class="s2">: There are </span><span class="si">$(</span><span class="nv">$profiles</span><span class="o">.</span><span class="nf">Count</span><span class="si">)</span><span class="s2"> deletion candidates"</span><span class="w">
+
+
+    </span><span class="kr">if</span><span class="p">(</span><span class="nv">$profiles</span><span class="o">.</span><span class="nf">Count</span><span class="w"> </span><span class="o">-gt</span><span class="w"> </span><span class="mi">0</span><span class="p">){</span><span class="w">
+        </span><span class="c"># There are multiple profiles on this computer.</span><span class="w">
+    
+        </span><span class="nv">$usernames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nv">$profiles</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Select</span><span class="w"> </span><span class="nt">-Property</span><span class="w"> </span><span class="p">@{</span><span class="nx">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Username'</span><span class="p">;</span><span class="w"> </span><span class="nx">Expression</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="bp">$_</span><span class="o">.</span><span class="nf">LocalPath</span><span class="w"> </span><span class="o">-replace</span><span class="w"> </span><span class="s2">"C:\\Users\\"</span><span class="p">,</span><span class="w"> </span><span class="s2">""</span><span class="p">}})</span><span class="o">.</span><span class="nf">Username</span><span class="w">
+
+        </span><span class="nv">$logonEvents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-WinEvent</span><span class="w"> </span><span class="nt">-ProviderName</span><span class="w"> </span><span class="s1">'Microsoft-Windows-Security-Auditing'</span><span class="w"> </span><span class="nt">-FilterXPath</span><span class="w"> </span><span class="s2">"*[System[EventID=4624] and EventData[Data[@Name='LogonType']='2'] and EventData[Data[@Name='VirtualAccount']='%%1843']]"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Select-Object</span><span class="w"> </span><span class="p">@{</span><span class="nx">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'LoginDate'</span><span class="p">;</span><span class="w"> </span><span class="nx">Expression</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="bp">$_</span><span class="o">.</span><span class="nf">TimeCreated</span><span class="p">}},</span><span class="w"> </span><span class="p">@{</span><span class="nx">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Username'</span><span class="p">;</span><span class="w"> </span><span class="nx">Expression</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">Properties</span><span class="o">.</span><span class="n">Value</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="w"> </span><span class="p">}},</span><span class="w"> </span><span class="p">@{</span><span class="nx">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'SID'</span><span class="p">;</span><span class="w"> </span><span class="nx">Expression</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">Properties</span><span class="o">.</span><span class="n">Value</span><span class="p">[</span><span class="mi">4</span><span class="p">]}}</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Group-Object</span><span class="w"> </span><span class="nx">Username</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Where-Object</span><span class="w"> </span><span class="p">{</span><span class="bp">$_</span><span class="o">.</span><span class="nf">Name</span><span class="w"> </span><span class="nt">-in</span><span class="w"> </span><span class="nv">$usernames</span><span class="p">}</span><span class="w">
+
+        </span><span class="nv">$lastUser</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$logonEvents</span><span class="p">[</span><span class="nt">-1</span><span class="p">]</span><span class="o">.</span><span class="nf">Name</span><span class="w">
+
+        </span><span class="n">Add-Content</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nv">$logPath</span><span class="w"> </span><span class="nt">-Value</span><span class="w"> </span><span class="s2">"</span><span class="si">$(</span><span class="n">Get-Date</span><span class="p">)</span><span class="s2">: Deleting </span><span class="si">$(</span><span class="nv">$lastUser</span><span class="si">)</span><span class="s2">"</span><span class="w">
+
+        </span><span class="n">Get-CimInstance</span><span class="w"> </span><span class="nt">-Class</span><span class="w"> </span><span class="nx">Win32_UserProfile</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Where-Object</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">LocalPath</span><span class="o">.</span><span class="nf">split</span><span class="p">(</span><span class="s1">'\'</span><span class="p">)[</span><span class="nt">-1</span><span class="p">]</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="nv">$lastUser</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Remove-CimInstance</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="kr">function</span><span class="w"> </span><span class="nf">Can-DeleteProfile</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nv">$profiles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gwmi</span><span class="w"> </span><span class="nx">win32_userprofile</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Where-Object</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">Special</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="bp">$false</span><span class="w"> </span><span class="o">-and</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">Loaded</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="bp">$false</span><span class="w"> </span><span class="o">-and</span><span class="w"> </span><span class="o">-not</span><span class="w"> </span><span class="p">((</span><span class="bp">$_</span><span class="o">.</span><span class="nf">LocalPath</span><span class="o">.</span><span class="nf">split</span><span class="p">(</span><span class="s1">'\'</span><span class="p">)[</span><span class="nt">-1</span><span class="p">])</span><span class="o">.</span><span class="nf">toLower</span><span class="p">()</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="nv">$computerOwner</span><span class="p">)}</span><span class="w">
+
+    </span><span class="kr">return</span><span class="w"> </span><span class="nv">$profiles</span><span class="o">.</span><span class="nf">Count</span><span class="w"> </span><span class="o">-gt</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="kr">function</span><span class="w"> </span><span class="nf">Should-DeleteProfile</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nv">$disk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Volume</span><span class="w"> </span><span class="nt">-DriveLetter</span><span class="w"> </span><span class="nx">C</span><span class="w">
+
+    </span><span class="kr">if</span><span class="p">(</span><span class="nv">$disk</span><span class="o">.</span><span class="nf">SizeRemaining</span><span class="w"> </span><span class="o">-lt</span><span class="w"> </span><span class="mi">30</span><span class="n">GB</span><span class="p">){</span><span class="w">
+        </span><span class="kr">return</span><span class="w"> </span><span class="bp">$true</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+
+    </span><span class="kr">return</span><span class="w"> </span><span class="bp">$false</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="o">-not</span><span class="w"> </span><span class="p">(</span><span class="n">Test-Path</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nv">$logPath</span><span class="p">)){</span><span class="w">
+    </span><span class="n">New-Item</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nv">$logPath</span><span class="w"> </span><span class="nt">-ItemType</span><span class="w"> </span><span class="nx">File</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Out-Null</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">Add-Content</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nv">$logPath</span><span class="w"> </span><span class="nt">-Value</span><span class="w"> </span><span class="s2">"</span><span class="si">$(</span><span class="n">Get-Date</span><span class="p">)</span><span class="s2">: Checking for profiles to delete"</span><span class="w">
+
+</span><span class="kr">while</span><span class="p">((</span><span class="n">Should-DeleteProfile</span><span class="p">)</span><span class="w"> </span><span class="o">-and</span><span class="w"> </span><span class="p">(</span><span class="n">Can-DeleteProfile</span><span class="p">)){</span><span class="w">
+    </span><span class="n">Delete-OldestProfile</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">Add-Content</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nv">$logPath</span><span class="w"> </span><span class="nt">-Value</span><span class="w"> </span><span class="s2">"</span><span class="si">$(</span><span class="n">Get-Date</span><span class="p">)</span><span class="s2">: Process finished"</span><span class="w">
+</span></code></pre></div></div>
+
+<p>With this a computer is reliabley remediated back to a usable state.</p>
+
+<p>After running for well over a year we’ve not had an issue since.</p>
+
+<p><img src="/assets/2024/11/keeping-profiles-under-control/remediation-stats.png" alt="Remediation Stats" /></p>
+
+<p>We do have some computers here that simply have disks that are too small. This remediation does give us a nice list of computers that need an upgrade.</p>
+
+</div>
+        </section>
+        <footer class="mt-4 px-4 lg:px-0">
+          &copy; Adam Laycock 2024
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

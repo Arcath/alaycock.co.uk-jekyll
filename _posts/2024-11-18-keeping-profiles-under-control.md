@@ -1,6 +1,7 @@
 ---
 title: Keeping profiles under control with a remdiation.
 lead: Free up disk space by deleting inactive profiles.
+ogimage: "https://alaycock.co.uk/assets/2024/11/keeping-profiles-under-control/og-image.png"
 date: 2024-11-18
 tags:
  - intune

@@ -1,0 +1,52 @@
+---
+title: CV
+layout: default
+---
+
+<div class="bg-white border-gray-300 border shadow-xl p-2">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Resume</h1>
+</div>
+
+<ol class="relative border-s border-gray-500">
+  <li class="mb-10 ms-4">&nbsp;</li>
+  {% for job in site.data.jobs %}
+  <li class="mb-10 ms-4">
+    <div
+      class="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.5 -start-1.5 border border-white"
+    ></div>
+    <div class="bg-white border border-gray-300 shadow p-2">
+      <time class="mb-1 text-sm font-normal leading-none text-gray-400"
+        >{{ job.dates }}</time
+      >
+      <h3 class="text-lg font-semibold text-gray-900">{{ job.label }}</h3>
+      <div class="mb-4 text-base font-normal text-gray-500">
+        <a href="{{ job.employer_link }}">{{ job.employer }}</a>
+      </div>
+    </div>
+  </li>
+  {% endfor %}
+</ol>
+
+<div class="bg-white border-gray-300 border shadow-xl p-2">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Portfolio</h1>
+</div>
+
+<ol class="relative border-s border-gray-500">
+  <li class="mb-10 ms-4">&nbsp;</li>
+  {% for cv in site.cv reversed %}
+  <li class="mb-10 ms-4">
+    <div
+      class="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.5 -start-1.5 border border-white"
+    ></div>
+    <div class="bg-white border border-gray-300 shadow p-2">
+      <time class="mb-1 text-sm font-normal leading-none text-gray-400"
+        >{{ cv.date | date_to_long_string }}</time
+      >
+      <h3 class="text-lg font-semibold text-gray-900">{{ cv.title }}</h3>
+      <div class="mb-4 text-base font-normal text-gray-500">
+        {{ cv.content | markdownify }}
+      </div>
+    </div>
+  </li>
+  {% endfor %}
+</ol>

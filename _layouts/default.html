@@ -1,36 +1,72 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/assets/512.png" />
-    <title>{{ page.title }}</title>
+    <title>{{ site.title }} :: {{ page.title }}</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
     <meta property="og:title" content="{{ site.title }} / {{ page.title }}" />
-    <meta property="og:description" content="{% if page.lead %}{{page.lead}}{% else %}{{ site.description }}{% endif %}" />
+    <meta
+      property="og:description"
+      content="{% if page.lead %}{{page.lead}}{% else %}{{ site.description }}{% endif %}"
+    />
     <meta property="og:image" content="{{ page.ogimage }}" />
   </head>
   <body>
     <div class="grid grid-cols-1 lg:grid-cols-layout gap-4">
-      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 mx-4 lg:col-start-2 lg:mx-0 text-center lg:text-left">
-        <img src="/assets/profile.jpg" alt="{{ site.title }}" class="lg:m-auto w-32 float-left lg:float-none lg:w-full mr-4" />
+      <div
+        class="bg-white border-gray-200 border shadow-xl p-2 mt-4 mx-4 lg:col-start-2 lg:mx-0 text-center lg:text-left"
+      >
+        <img
+          src="/assets/profile.jpg"
+          alt="{{ site.title }}"
+          class="lg:m-auto w-32 float-left lg:float-none lg:w-full mr-4"
+        />
         <h2 class="font-light text-2xl">{{ site.title }}</h2>
         <h3 class="font-light text-lg">{{ site.description }}</h3>
-        
+
         <div class="grid grid-cols-3 gap-2 text-center mt-4">
-          <a href="/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Home</a>
-          <a href="/blog/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Posts</a>
-          <a href="/talks/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Talks</a>
-          <a href="/about/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">About</a>
-          <a href="/uses/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Uses</a>
-          <a href="/contact/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Contact</a>
+          <a
+            href="/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Home</a
+          >
+          <a
+            href="/blog/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Posts</a
+          >
+          <a
+            href="/talks/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Talks</a
+          >
+          <a
+            href="/about/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >About</a
+          >
+          <a
+            href="/cv/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >CV</a
+          >
+          <a
+            href="/uses/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Uses</a
+          >
+          <a
+            href="/contact/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Contact</a
+          >
         </div>
       </div>
       <div class="lg:row-span-2">
-        <section class="p-4 lg:pb-0 lg:pl-0">
-          {{ content }}
-        </section>
+        <section class="p-4 lg:pb-0 lg:pl-0">{{ content }}</section>
         <footer class="mt-4 px-4 lg:px-0">
           &copy; {{ site.title }} {{ site.time | date: '%Y' }}
         </footer>

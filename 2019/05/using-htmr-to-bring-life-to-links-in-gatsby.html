@@ -1,35 +1,72 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/assets/512.png" />
-    <title>Using HTMR to bring life to links in Gatsby</title>
+    <title>Adam Laycock :: Using HTMR to bring life to links in Gatsby</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
     <meta property="og:title" content="Adam Laycock / Using HTMR to bring life to links in Gatsby" />
-    <meta property="og:description" content="Change the &quot;dead&quot; links in rendered markdown into proper links in Gatsby" />
+    <meta
+      property="og:description"
+      content="Change the &quot;dead&quot; links in rendered markdown into proper links in Gatsby"
+    />
     <meta property="og:image" content="https://alaycock.co.uk/assets/og-image.png" />
   </head>
   <body>
     <div class="grid grid-cols-1 lg:grid-cols-layout gap-4">
-      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 mx-4 lg:col-start-2 lg:mx-0 text-center lg:text-left">
-        <img src="/assets/profile.jpg" alt="Adam Laycock" class="lg:m-auto w-32 float-left lg:float-none lg:w-full mr-4" />
+      <div
+        class="bg-white border-gray-200 border shadow-xl p-2 mt-4 mx-4 lg:col-start-2 lg:mx-0 text-center lg:text-left"
+      >
+        <img
+          src="/assets/profile.jpg"
+          alt="Adam Laycock"
+          class="lg:m-auto w-32 float-left lg:float-none lg:w-full mr-4"
+        />
         <h2 class="font-light text-2xl">Adam Laycock</h2>
         <h3 class="font-light text-lg">EdTech Network Manager & Developer</h3>
-        
+
         <div class="grid grid-cols-3 gap-2 text-center mt-4">
-          <a href="/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Home</a>
-          <a href="/blog/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Posts</a>
-          <a href="/talks/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Talks</a>
-          <a href="/about/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">About</a>
-          <a href="/uses/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Uses</a>
-          <a href="/contact/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Contact</a>
+          <a
+            href="/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Home</a
+          >
+          <a
+            href="/blog/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Posts</a
+          >
+          <a
+            href="/talks/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Talks</a
+          >
+          <a
+            href="/about/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >About</a
+          >
+          <a
+            href="/cv/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >CV</a
+          >
+          <a
+            href="/uses/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Uses</a
+          >
+          <a
+            href="/contact/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Contact</a
+          >
         </div>
       </div>
       <div class="lg:row-span-2">
-        <section class="p-4 lg:pb-0 lg:pl-0">
-          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+        <section class="p-4 lg:pb-0 lg:pl-0"><div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
   <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Using HTMR to bring life to links in Gatsby</h1>
   <ul class="flex gap-2">
     <li>15 May 2019</li>
@@ -88,10 +125,9 @@
 <p>Take this link to <a href="/about">about me</a> it is an internal link that is now a proper <code class="language-plaintext highlighter-rouge">Link</code>. Give it a try and notice how fast it is. This link to my <a href="https://arcath.net/uses">uses page</a> on the other hand, thats a full blown link and works like internal links did before HTMR.</p>
 
 <p>There is the plugin <a href="https://www.gatsbyjs.org/packages/gatsby-plugin-catch-links/">gatsby-plugin-catch-links</a> that provides a similar outcome but does it in a very heavy handed way. It binds itself to all links in the browser and on a per-link basis decides if its an internal link and how to navigate to its target. My method with HTMR <em>fixes</em> the links during site build and requires no extra even bindings on the client side. Plus it only applies to the markdown and not other links on the site that are already React components.</p>
-</div>
-        </section>
+</div></section>
         <footer class="mt-4 px-4 lg:px-0">
-          &copy; Adam Laycock 2024
+          &copy; Adam Laycock 2025
         </footer>
       </div>
     </div>

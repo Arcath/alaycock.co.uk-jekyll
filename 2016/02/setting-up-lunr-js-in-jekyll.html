@@ -1,35 +1,72 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/assets/512.png" />
-    <title>Setting up lunr.js in Jekyll</title>
+    <title>Adam Laycock :: Setting up lunr.js in Jekyll</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
     <meta property="og:title" content="Adam Laycock / Setting up lunr.js in Jekyll" />
-    <meta property="og:description" content="In-Website searching for Jekyll using lunr.js" />
+    <meta
+      property="og:description"
+      content="In-Website searching for Jekyll using lunr.js"
+    />
     <meta property="og:image" content="https://alaycock.co.uk/assets/og-image.png" />
   </head>
   <body>
     <div class="grid grid-cols-1 lg:grid-cols-layout gap-4">
-      <div class="bg-white border-gray-200 border shadow-xl p-2 mt-4 mx-4 lg:col-start-2 lg:mx-0 text-center lg:text-left">
-        <img src="/assets/profile.jpg" alt="Adam Laycock" class="lg:m-auto w-32 float-left lg:float-none lg:w-full mr-4" />
+      <div
+        class="bg-white border-gray-200 border shadow-xl p-2 mt-4 mx-4 lg:col-start-2 lg:mx-0 text-center lg:text-left"
+      >
+        <img
+          src="/assets/profile.jpg"
+          alt="Adam Laycock"
+          class="lg:m-auto w-32 float-left lg:float-none lg:w-full mr-4"
+        />
         <h2 class="font-light text-2xl">Adam Laycock</h2>
         <h3 class="font-light text-lg">EdTech Network Manager & Developer</h3>
-        
+
         <div class="grid grid-cols-3 gap-2 text-center mt-4">
-          <a href="/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Home</a>
-          <a href="/blog/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Posts</a>
-          <a href="/talks/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Talks</a>
-          <a href="/about/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">About</a>
-          <a href="/uses/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Uses</a>
-          <a href="/contact/" class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none">Contact</a>
+          <a
+            href="/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Home</a
+          >
+          <a
+            href="/blog/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Posts</a
+          >
+          <a
+            href="/talks/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Talks</a
+          >
+          <a
+            href="/about/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >About</a
+          >
+          <a
+            href="/cv/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >CV</a
+          >
+          <a
+            href="/uses/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Uses</a
+          >
+          <a
+            href="/contact/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Contact</a
+          >
         </div>
       </div>
       <div class="lg:row-span-2">
-        <section class="p-4 lg:pb-0 lg:pl-0">
-          <div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+        <section class="p-4 lg:pb-0 lg:pl-0"><div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
   <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Setting up lunr.js in Jekyll</h1>
   <ul class="flex gap-2">
     <li>23 February 2016</li>
@@ -56,6 +93,12 @@
             </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Net-Doc"</span><span class="p">,</span><span class="w">
             </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/2024/10/net-doc"</span><span class="p">,</span><span class="w">
             </span><span class="nl">"summary"</span><span class="p">:</span><span class="w"> </span><span class="s2">"For the past 8 months I&amp;apos;ve been working on a documentation system for us to store everything we might need on our network. Especially given that _&amp;quot;network&amp;quot;_ in a secondary school means everything from the Hyper-V cluster down to the access control units for the motorised gates at the front..."</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+    
+        </span><span class="nl">"2024-06-chromeos-in-a-microsoft-estate-part-1"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ChromeOS in a Microsoft Estate / Part 1"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/2024/06/chromeos-in-a-microsoft-estate-part-1"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"summary"</span><span class="p">:</span><span class="w"> </span><span class="s2">"This is a write up of a [talk](/talks) I gave a North West ANME meeting.## Where did we startWe are a Microsoft School through and through. AD rules the roost in school, AAD syncs with it and our cloud presense is all Office 365."</span><span class="w">
         </span><span class="p">},</span><span class="w">
     
         </span><span class="nl">"2024-06-back-to-jekyll"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -608,6 +651,13 @@
         </span><span class="p">}</span><span class="w">
         </span><span class="p">,</span><span class="w">
     
+        </span><span class="nl">"cv"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CV"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/cv.html"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"summary"</span><span class="p">:</span><span class="w"> </span><span class="s2">"  Resume  &amp;amp;nbsp;  {% for job in site.data.jobs %}                {{ job.dates }}      {{ job.label }}              {{ job.employer }}              {% endfor %}  Portfolio  &amp;amp;nbsp;  {% for cv in site.cv reversed %}                {{ cv.date | date_to_long_string }}      {{ cv.title }}              {{ cv.content | markdownify }}              {% endfor %}"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+        </span><span class="p">,</span><span class="w">
+    
         </span><span class="nl">""</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
             </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Adam Laycock"</span><span class="p">,</span><span class="w">
             </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/.html"</span><span class="p">,</span><span class="w">
@@ -632,7 +682,7 @@
         </span><span class="nl">"uses"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
             </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Uses"</span><span class="p">,</span><span class="w">
             </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/uses/.html"</span><span class="p">,</span><span class="w">
-            </span><span class="nl">"summary"</span><span class="p">:</span><span class="w"> </span><span class="s2">"This is a mostly complete list of the software I use on a day to day basis.# Developer## Editor- [Visual Studio Code](https://code.visualstudio.com/). I&amp;apos;ve been using VSCode for a while now and its become my go to editor for everything.- [Railscasts Plus](https://marketplace.visualstudio.com/items?itemName=marlosirapuan.vscode-theme-railscasts-plus) editor theme.- [JetBrains Mono](https://www.jetbrains.com/lp/mono/). A great font with support..."</span><span class="w">
+            </span><span class="nl">"summary"</span><span class="p">:</span><span class="w"> </span><span class="s2">"This is a mostly complete list of the software I use on a day to day basis.-- [Visual Studio Code](https://code.visualstudio.com/). I&amp;apos;ve been using VSCode for a while now and its become my go to editor for everything.- [Railscasts Plus](https://marketplace.visualstudio.com/items?itemName=marlosirapuan.vscode-theme-railscasts-plus) editor theme.- [JetBrains Mono](https://www.jetbrains.com/lp/mono/). A great font with support for ligatures...."</span><span class="w">
         </span><span class="p">}</span><span class="w">
         </span><span class="p">,</span><span class="w">
     
@@ -1014,6 +1064,20 @@
         </span><span class="p">}</span><span class="w">
         </span><span class="p">,</span><span class="w">
     
+        </span><span class="nl">"tag-google-workspace"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Posts Tagged google-workspace"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/tag/google-workspace/.html"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"summary"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+        </span><span class="p">,</span><span class="w">
+    
+        </span><span class="nl">"tag-entra"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Posts Tagged entra"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/tag/entra/.html"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"summary"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+        </span><span class="p">,</span><span class="w">
+    
         </span><span class="nl">"tag-net-doc"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
             </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Posts Tagged net-doc"</span><span class="p">,</span><span class="w">
             </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/tag/net-doc/.html"</span><span class="p">,</span><span class="w">
@@ -1090,10 +1154,9 @@
 <p>The order is set by the <em>relevance</em> of the result with the closer matches at the top.</p>
 
 <p>This is a great feature which should help users find content easier.</p>
-</div>
-        </section>
+</div></section>
         <footer class="mt-4 px-4 lg:px-0">
-          &copy; Adam Laycock 2024
+          &copy; Adam Laycock 2025
         </footer>
       </div>
     </div>

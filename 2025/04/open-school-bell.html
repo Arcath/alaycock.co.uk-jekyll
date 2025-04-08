@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/assets/512.png" />
+    <title>Adam Laycock :: Open School Bell</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/font-awesome/css/all.min.css" />
+    <meta property="og:title" content="Adam Laycock / Open School Bell" />
+    <meta
+      property="og:description"
+      content="Building a modern bell system for schools."
+    />
+    <meta property="og:image" content="https://alaycock.co.uk/assets/og-image.png" />
+  </head>
+  <body>
+    <div class="grid grid-cols-1 lg:grid-cols-layout gap-4">
+      <div
+        class="bg-white border-gray-200 border shadow-xl p-2 mt-4 mx-4 lg:col-start-2 lg:mx-0 text-center lg:text-left"
+      >
+        <img
+          src="/assets/profile.jpg"
+          alt="Adam Laycock"
+          class="lg:m-auto w-32 float-left lg:float-none lg:w-full mr-4"
+        />
+        <h2 class="font-light text-2xl">Adam Laycock</h2>
+        <h3 class="font-light text-lg">EdTech Network Manager & Developer</h3>
+
+        <div class="grid grid-cols-3 gap-2 text-center mt-4">
+          <a
+            href="/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Home</a
+          >
+          <a
+            href="/blog/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Posts</a
+          >
+          <a
+            href="/talks/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Talks</a
+          >
+          <a
+            href="/about/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >About</a
+          >
+          <a
+            href="/cv/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >CV</a
+          >
+          <a
+            href="/uses/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Uses</a
+          >
+          <a
+            href="/contact/"
+            class="bg-gray-200 p-2 shadow border border-gray-300 hover:shadow-none"
+            >Contact</a
+          >
+        </div>
+      </div>
+      <div class="lg:row-span-2">
+        <section class="p-4 lg:pb-0 lg:pl-0"><div class="bg-white border-gray-300 border shadow-xl p-2 mb-4">
+  <h1 class="font-light text-3xl border-b border-gray-200 mb-4">Open School Bell</h1>
+  <ul class="flex gap-2">
+    <li>08 April 2025</li>
+    
+      <li><a href="/tag/open-school-bell">#open-school-bell</a></li>
+    
+      <li><a href="/tag/remix">#remix</a></li>
+    
+      <li><a href="/tag/raspberry-pi">#raspberry-pi</a></li>
+    
+  </ul>
+</div>
+<div class="bg-white prose border-gray-300 border shadow-xl p-2"><p>Over at <a href="https://www.lhs.lancs.sch.uk">Longridge High School</a> we had a problem with our bells. Our aged system relies on radio pulses to trigger the bells around the school, which works great in testing during the holidays but falls apart when nearly 1000 people come into site with phones, watches, and all the other RF emitting devices across the school. For a while the issue of the odd bell not going off was annoying, but fixable with a good clock in the classroom. It does however become dangerous when we send out a lockdown signal and half the school doesn’t get it.</p>
+
+<p>This all came to a head with our new building, did we want to pay to extend this system if its something we want to replace?</p>
+
+<h2 id="commercial-solutions">Commercial Solutions</h2>
+
+<p>Obviously building our own system was not our first thought. So we asked around and got a couple of quotes for 2 different approaches.</p>
+
+<p>The first was the modern equivilent of our current system. It uses a network connected master-clock to trigger bells that are also on the network. On-paper pretty good, but its fatal flaw is that it uses PoE to power the bells. This provides a low wattage to the speakers and results in a very quiet sound. <em>Easily</em> mitigated by putting in more bells, but has a significant cost implication.</p>
+
+<p>The other main solution used a cloud based app to communicate with on-prem boxes that are connected to an amplifier, which in turn is wired to a speaker in every room. This has one big flaw/consideration that I raised before the quote even came through. The <em>cloud based app</em>, our ability to trigger lockdowns is dependent on a functioning internet connection, no outages for us or them. There is also questions about how the on-prem boxes work, would they ring lesson-change if the internet was down? Throw in the phone apps, imagine running from an intruder and being asked to log back into an app you never open.</p>
+
+<h2 id="can-we-build-it">Can we build it?</h2>
+
+<p>Within the IT team we had discussed the options, before the quotes came through, which made us think the quotes would be a fair bit lower than they actually turned out to be.</p>
+
+<p>The PoE system to us seemed like it should be pretty cheap right? Arduino style chip, PoE hat, DAC+amp with a speaker. How could that be more than £50-£75 a unit? This is also where our concerns about volume came from.</p>
+
+<p>Having a small computer connected to an amp with speaker wire around the area seemed like a much better option to us. The cost of this option came in a fair bit higher than we had hoped, along with a relatively high annual cost. Which brings in the added issue of if we stop paying maintenance do we no have no bells?</p>
+
+<p>This was all becoming a lot of money for the intial problem of no bells in the new building. We where sitting on a persistent niggling thought that we could build this ourselves. So what would we want our system to look like?</p>
+
+<h3 id="specification">Specification</h3>
+
+<ul>
+  <li>Local controller, everything running in school.</li>
+  <li>Network connected, trigger lockdowns from anything on the network.</li>
+  <li>Pis that would run indepedently and still work for lesson change even if the controller was down.</li>
+  <li>Monitoring through Zabbix, so we know whats going on at any given moment.</li>
+  <li>Link to the old bells so we could spread teh cost and run the transition in phases.</li>
+  <li>Text to Speech for tannoy annoucements.</li>
+</ul>
+
+<h2 id="open-school-bell">Open School Bell</h2>
+
+<p>The end result is of course that we built something ourselves. <a href="https://openschoolbell.co.uk/">Open School Bell</a> is that something, an open-source bell solution that supports everything we need it to and is a platform to build out beyond that in the future.</p>
+
+<p>There are 3 main components to the system, all installed in <em>phase 1</em> of our implementation.</p>
+
+<ol>
+  <li>The <a href="https://github.com/Open-School-Bell/controller">controller</a>, a <a href="https://remix.run/">Remix</a> app in a docker container which runs along side a couple of other services to provide the central control system for the bells.</li>
+  <li>The <a href="https://github.com/Open-School-Bell/sounder">sounder</a>, a node js service that runs on a Raspberry Pi connected to an amplifier, or to a relay that triggers a ringer wire.</li>
+  <li>The screen, an additional service on the sounder that displays on a Pi Touch Display 2, giving users an interface to the system.</li>
+</ol>
+
+<p><img src="/assets/2025/04/open-school-bell/amp.jpg" alt="A Raspberry Pi connected to an amplifier" /></p>
+
+<p><img src="/assets/2025/04/open-school-bell/terminal.jpg" alt="Terminal" /></p>
+
+<p>Over the Easter holidays we’ve now installed the amplifier in our new building. 10 speakers spread across 6 classrooms, 2 stairwells, 1 office and an entrance way. This is after running the system for a couple of weeks for stability testing.</p>
+
+<p>In the main office, near the master-clock for our current system, we fitted a second sounder to run the screen. This sounder also has a relay in it connected to the current bells. Open School Bell can now trigger the old bell system on the same schedule, bringing network control and network time to the old system.</p>
+
+<p>Open School Bell is going to be our focus for a while. It will be run through its paces with lockdown drills and of course running every scheduled bell from now on.</p>
+</div></section>
+        <footer class="mt-4 px-4 lg:px-0">
+          &copy; Adam Laycock 2025
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>
